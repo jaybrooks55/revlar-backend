@@ -1,54 +1,74 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Revlar — Secure Portal</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@500,600,700,800,900&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--base:#0A1628;--surface:#0F2040;--card:#1A3258;--amber:#F59E0B;--body:#E2EBF5;--success:#34D399;--danger:#EF4444;--warn:#F97316;--muted:#7A95B8;--border:#1E3A5F;--purple:#a78bfa}
-html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);color:var(--body)}
+/* DARK MODE (default) */
+:root{
+  --base:#0A1628;--surface:#0F2040;--card:#1A3258;--amber:#F59E0B;--body:#E2EBF5;
+  --success:#34D399;--danger:#EF4444;--warn:#F97316;--muted:#7A95B8;--border:#1E3A5F;--purple:#a78bfa;
+  --logo-stroke:#fff;--logo-faint:rgba(255,255,255,0.2);--input-bg:#1A3258;--hover-bg:rgba(255,255,255,.02);
+  --grid-line:#16304f;--shadow:rgba(0,0,0,.4)
+}
+/* LIGHT MODE */
+[data-theme="light"]{
+  --base:#F4F7FB;--surface:#FFFFFF;--card:#EEF3F9;--amber:#E08600;--body:#1A2A3A;
+  --success:#0F9D6B;--danger:#DC2626;--warn:#EA580C;--muted:#64748B;--border:#DDE6F0;--purple:#7C3AED;
+  --logo-stroke:#1A2A3A;--logo-faint:rgba(26,42,58,0.15);--input-bg:#FFFFFF;--hover-bg:rgba(0,0,0,.015);
+  --grid-line:#E2EAF3;--shadow:rgba(0,0,0,.08)
+}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);color:var(--body);transition:background .3s,color .3s}
+.syne{font-family:'Satoshi',sans-serif}
+
+/* ── LOGO ── */
+.logo-mark{display:block}
+.logo-mark path,.logo-mark circle{transition:stroke .3s,fill .3s}
 
 /* ── LOGIN ── */
-#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--base);position:relative;overflow:hidden}
-#login-screen::before{content:'';position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:60px 60px;opacity:.12}
-.login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:48px 44px;width:100%;max-width:420px;position:relative;z-index:1}
-.login-logo{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:#fff;text-align:center;margin-bottom:6px}
-.login-logo span{color:var(--amber)}
-.login-sub{font-size:12px;color:var(--muted);text-align:center;letter-spacing:1px;text-transform:uppercase;margin-bottom:36px}
-.login-badge{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:6px;padding:10px;margin-bottom:24px;font-size:12px;color:#f87171}
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--base);position:relative;overflow:hidden;transition:background .3s}
+#login-screen::before{content:'';position:absolute;inset:0;background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);background-size:60px 60px;opacity:.5;mask-image:radial-gradient(ellipse 70% 60% at 50% 40%,#000,transparent 75%);-webkit-mask-image:radial-gradient(ellipse 70% 60% at 50% 40%,#000,transparent 75%)}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:44px;width:100%;max-width:420px;position:relative;z-index:1;box-shadow:0 24px 64px -16px var(--shadow)}
+.login-logo-wrap{display:flex;justify-content:center;margin-bottom:24px}
+.login-sub{font-family:'Satoshi',sans-serif;font-size:13px;font-weight:600;color:var(--muted);text-align:center;letter-spacing:1px;text-transform:uppercase;margin-bottom:32px}
+.login-badge{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:6px;padding:10px;margin-bottom:24px;font-size:12px;color:#ef4444}
 .login-badge svg{width:14px;height:14px;flex-shrink:0}
 .field-group{margin-bottom:16px}
 .field-label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;display:block}
-.field-input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:var(--body);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+.field-input{width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:var(--body);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
 .field-input:focus{border-color:var(--amber)}
-.field-input::placeholder{color:#2e4a6a}
 .user-select{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
-.user-btn{background:var(--card);border:2px solid var(--border);border-radius:8px;padding:14px;cursor:pointer;transition:all .2s;text-align:center}
+.user-btn{background:var(--input-bg);border:2px solid var(--border);border-radius:8px;padding:14px;cursor:pointer;transition:all .2s;text-align:center}
 .user-btn:hover{border-color:var(--muted)}
 .user-btn.selected{border-color:var(--amber);background:rgba(245,158,11,.08)}
-.user-btn-avatar{width:36px;height:36px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#fff}
-.user-btn-name{font-size:13px;font-weight:600;color:#fff}
+.user-btn-avatar{width:36px;height:36px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-family:'Satoshi',sans-serif;font-size:14px;font-weight:800;color:#fff;background-size:cover;background-position:center}
+.user-btn-name{font-size:13px;font-weight:600;color:var(--body)}
 .user-btn-role{font-size:10px;color:var(--muted);margin-top:2px}
 .login-btn{width:100%;background:var(--amber);color:#0A1628;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;padding:13px;border-radius:8px;border:none;cursor:pointer;transition:opacity .2s;letter-spacing:.3px;margin-top:8px}
 .login-btn:hover{opacity:.9}
-.login-error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:6px;padding:10px 14px;font-size:12px;color:#f87171;margin-top:12px;display:none;text-align:center}
+.login-error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:6px;padding:10px 14px;font-size:12px;color:#ef4444;margin-top:12px;display:none;text-align:center}
 
 /* ── APP SHELL ── */
 #app{display:none;height:100vh;flex-direction:column}
-.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.t-logo{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#fff}
-.t-logo span{color:var(--amber)}
-.t-right{display:flex;align-items:center;gap:16px}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;transition:background .3s,border-color .3s}
+.t-left{display:flex;align-items:center;gap:12px}
+.t-portal-label{font-size:12px;color:var(--muted);font-weight:500}
+.t-right{display:flex;align-items:center;gap:14px}
+.theme-toggle{background:var(--card);border:1px solid var(--border);border-radius:100px;width:52px;height:28px;cursor:pointer;position:relative;transition:all .3s;flex-shrink:0}
+.theme-toggle-knob{position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:var(--amber);transition:transform .3s;display:flex;align-items:center;justify-content:center;font-size:11px}
+[data-theme="light"] .theme-toggle-knob{transform:translateX(24px)}
 .t-user{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:100px;padding:5px 12px 5px 5px}
-.t-avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:#fff}
+.t-avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Satoshi',sans-serif;font-size:11px;font-weight:800;color:#fff;background-size:cover;background-position:center}
 .t-uname{font-size:12px;font-weight:600;color:var(--body)}
 .t-role{font-size:10px;color:var(--muted)}
 .t-logout{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--muted);font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
 .t-logout:hover{border-color:var(--danger);color:var(--danger)}
-.t-notif{position:relative;cursor:pointer}
+.t-notif{position:relative;cursor:pointer;font-size:18px}
 .t-notif-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:var(--danger);border:2px solid var(--surface)}
 .body-layout{display:flex;flex:1;overflow:hidden}
 
 /* ── SIDEBAR ── */
-.sidebar{width:210px;background:var(--surface);border-right:1px solid var(--border);padding:16px 0;flex-shrink:0;overflow-y:auto;display:flex;flex-direction:column}
+.sidebar{width:210px;background:var(--surface);border-right:1px solid var(--border);padding:16px 0;flex-shrink:0;overflow-y:auto;display:flex;flex-direction:column;transition:background .3s,border-color .3s}
 .nav-section{padding:0 12px;margin-bottom:20px}
 .nav-section-label{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:2.5px;text-transform:uppercase;padding:0 8px;margin-bottom:6px}
 .nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;font-size:12px;color:var(--muted);cursor:pointer;transition:all .2s;margin-bottom:2px;border:1px solid transparent}
@@ -56,46 +76,44 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
 .nav-item.active{background:rgba(245,158,11,.1);color:var(--amber);border-color:rgba(245,158,11,.2);font-weight:600}
 .nav-item-icon{width:16px;text-align:center;font-size:13px;flex-shrink:0}
 .nav-badge{margin-left:auto;background:var(--amber);color:#0A1628;font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;min-width:18px;text-align:center}
-.nav-badge.danger{background:var(--danger);color:#fff}
 .sidebar-footer{margin-top:auto;padding:12px 16px;border-top:1px solid var(--border)}
-.sf-version{font-size:10px;color:#1e3a5f;text-align:center}
+.sf-version{font-size:10px;color:var(--muted);text-align:center;opacity:.6}
 
 /* ── MAIN ── */
 .main{flex:1;overflow-y:auto;padding:24px}
 .page{display:none}
-.page.active{display:block}
+.page.active{display:block;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
-.page-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#fff}
+.page-title{font-family:'Satoshi',sans-serif;font-size:20px;font-weight:800;color:var(--body)}
 .page-sub{font-size:12px;color:var(--muted);margin-top:2px}
 .btn{padding:9px 16px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
 .btn-primary{background:var(--amber);color:#0A1628}
 .btn-primary:hover{opacity:.9}
 .btn-secondary{background:var(--card);color:var(--body);border:1px solid var(--border)}
 .btn-secondary:hover{border-color:var(--muted)}
-.btn-danger{background:rgba(239,68,68,.15);color:var(--danger);border:1px solid rgba(239,68,68,.3)}
 
 /* ── CARDS ── */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:10px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;transition:background .3s,border-color .3s}
 .card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.card-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#fff}
+.card-title{font-family:'Satoshi',sans-serif;font-size:13px;font-weight:700;color:var(--body)}
 .card-body{padding:16px 20px}
 
-/* ── STAT GRID ── */
+/* ── STATS ── */
 .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;transition:background .3s,border-color .3s}
 .stat-card.highlight{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.04)}
-.stat-val{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#fff;line-height:1}
+.stat-val{font-family:'Satoshi',sans-serif;font-size:28px;font-weight:800;color:var(--body);line-height:1}
 .stat-label{font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:.3px}
 .stat-delta{font-size:10px;font-weight:600;margin-top:6px}
 .delta-up{color:var(--success)}
-.delta-down{color:var(--danger)}
 
-/* ── ACTIVITY TABLE ── */
+/* ── TABLE ── */
 .activity-table{width:100%;border-collapse:collapse;font-size:12px}
 .activity-table th{padding:9px 12px;text-align:left;font-size:10px;font-weight:600;color:var(--muted);letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--border)}
 .activity-table td{padding:11px 12px;border-bottom:1px solid var(--border);color:var(--body);vertical-align:middle}
 .activity-table tr:last-child td{border-bottom:none}
-.activity-table tr:hover td{background:rgba(255,255,255,.02)}
+.activity-table tr:hover td{background:var(--hover-bg)}
 .verdict-pill{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.5px;padding:3px 8px;border-radius:3px;text-transform:uppercase}
 .vp-m{background:rgba(239,68,68,.15);color:var(--danger)}
 .vp-a{background:rgba(52,211,153,.15);color:var(--success)}
@@ -105,7 +123,7 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
 .score-bar-wrap{display:flex;align-items:center;gap:8px}
 .score-bar-track{background:var(--card);border-radius:100px;height:5px;width:60px;overflow:hidden}
 .score-bar-fill{height:100%;border-radius:100px}
-.score-num{font-size:11px;font-weight:600;color:#fff;min-width:28px}
+.score-num{font-size:11px;font-weight:600;color:var(--body);min-width:28px}
 .action-link{color:var(--amber);font-size:11px;font-weight:600;cursor:pointer;text-decoration:none;background:none;border:none;font-family:'Inter',sans-serif}
 .action-link:hover{opacity:.8}
 .empty-state{text-align:center;padding:40px;color:var(--muted);font-size:13px}
@@ -115,27 +133,26 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
 .upload-zone{border:2px dashed var(--border);border-radius:10px;padding:36px;text-align:center;cursor:pointer;transition:all .3s;margin-bottom:20px}
 .upload-zone:hover,.upload-zone.drag{border-color:var(--amber);background:rgba(245,158,11,.03)}
 .uz-icon{font-size:36px;margin-bottom:10px;opacity:.5}
-.uz-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:#fff;margin-bottom:4px}
+.uz-title{font-family:'Satoshi',sans-serif;font-size:15px;font-weight:700;color:var(--body);margin-bottom:4px}
 .uz-sub{font-size:12px;color:var(--muted);margin-bottom:14px}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
 .form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px}
 .form-field{display:flex;flex-direction:column;gap:5px}
 .form-label{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
-.form-input{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:10px 12px;color:var(--body);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:border-color .2s;width:100%}
+.form-input{background:var(--input-bg);border:1px solid var(--border);border-radius:7px;padding:10px 12px;color:var(--body);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:border-color .2s;width:100%}
 .form-input:focus{border-color:var(--amber)}
-.form-input::placeholder{color:#2e4a6a}
-.form-select{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:10px 12px;color:var(--body);font-family:'Inter',sans-serif;font-size:13px;outline:none;width:100%;cursor:pointer}
+.form-select{background:var(--input-bg);border:1px solid var(--border);border-radius:7px;padding:10px 12px;color:var(--body);font-family:'Inter',sans-serif;font-size:13px;outline:none;width:100%;cursor:pointer}
 .form-select option{background:var(--card)}
 .file-info-bar{background:var(--surface);border:1px solid var(--success);border-radius:8px;padding:12px 16px;margin-bottom:16px;display:none;align-items:center;gap:12px}
 .file-info-bar.show{display:flex}
-.fi-name{font-size:13px;font-weight:500;color:#fff}
+.fi-name{font-size:13px;font-weight:500;color:var(--body)}
 .fi-meta{font-size:11px;color:var(--muted);margin-top:1px}
-.fi-hash{font-size:10px;font-family:monospace;color:var(--border);margin-top:2px}
+.fi-hash{font-size:10px;font-family:monospace;color:var(--muted);margin-top:2px;opacity:.7}
 
-/* ── SCAN PROGRESS ── */
+/* ── SCAN ── */
 .scan-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:22px;margin-bottom:16px;display:none}
 .scan-card.show{display:block}
-.scan-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:14px}
+.scan-title{font-family:'Satoshi',sans-serif;font-size:14px;font-weight:700;color:var(--body);margin-bottom:14px}
 .prog-wrap{margin-bottom:14px}
 .prog-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px}
 .prog-track{background:var(--card);border-radius:100px;height:7px;overflow:hidden}
@@ -143,9 +160,9 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
 .tool-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
 .tool-icon{width:26px;height:26px;border-radius:6px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
 .tool-name{font-size:12px;color:var(--body);flex:1}
-.tool-name span{font-size:10px;color:var(--border)}
+.tool-name span{font-size:10px;color:var(--muted);opacity:.6}
 .tool-status{font-size:11px;font-weight:500}
-.ts-wait{color:var(--border)}
+.ts-wait{color:var(--muted);opacity:.5}
 .ts-run{color:var(--amber);animation:blink 1s ease-in-out infinite}
 .ts-done{color:var(--success)}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -155,43 +172,36 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
 .results-panel.show{display:block}
 .verdict-banner{border-radius:10px;padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
 .vb-manip{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.3)}
-.vb-auth{background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.3)}
-.vb-inc{background:rgba(249,115,22,.07);border:1px solid rgba(249,115,22,.3)}
 .vb-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
-.vb-verdict{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-0.5px}
+.vb-verdict{font-family:'Satoshi',sans-serif;font-size:28px;font-weight:800;letter-spacing:-0.5px}
 .vb-m{color:var(--danger)}
-.vb-a{color:var(--success)}
-.vb-i{color:var(--warn)}
 .vb-sub{font-size:12px;color:var(--muted);margin-top:3px}
 .vb-score{text-align:center}
-.vb-score-num{font-family:'Syne',sans-serif;font-size:44px;font-weight:800;color:#fff;line-height:1}
+.vb-score-num{font-family:'Satoshi',sans-serif;font-size:44px;font-weight:800;color:var(--body);line-height:1}
 .vb-score-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
 .vb-analyst{text-align:right}
 .vb-analyst-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
-.vb-analyst-name{font-size:13px;font-weight:600;color:#fff}
+.vb-analyst-name{font-size:13px;font-weight:600;color:var(--body)}
 .vb-analyst-time{font-size:11px;color:var(--muted);margin-top:2px}
 .tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
 .tool-card{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:16px}
 .tool-card.flagged{border-color:rgba(239,68,68,.35)}
-.tool-card.clean{border-color:rgba(52,211,153,.3)}
 .tc-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
-.tc-name{font-size:12px;font-weight:600;color:#fff}
+.tc-name{font-size:12px;font-weight:600;color:var(--body)}
 .tc-type{font-size:10px;color:var(--muted);margin-top:1px}
 .tc-badge{font-size:9px;font-weight:700;padding:3px 7px;border-radius:3px;letter-spacing:.5px;text-transform:uppercase;flex-shrink:0}
 .tb-m{background:rgba(239,68,68,.15);color:var(--danger)}
-.tb-a{background:rgba(52,211,153,.15);color:var(--success)}
 .tc-bar-row{display:flex;justify-content:space-between;margin-bottom:4px;font-size:10px;color:var(--muted)}
-.tc-bar-val{color:#fff;font-weight:600}
+.tc-bar-val{color:var(--body);font-weight:600}
 .tc-track{background:var(--card);border-radius:100px;height:5px;overflow:hidden;margin-bottom:8px}
 .tc-fill{height:100%;border-radius:100px}
 .fill-r{background:var(--danger)}
 .fill-w{background:var(--warn)}
 .fill-a{background:var(--amber)}
-.fill-g{background:var(--success)}
 .tc-desc{font-size:11px;color:var(--muted);line-height:1.5;padding-top:8px;border-top:1px solid var(--border)}
 .anom-list{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px}
 .anom-list-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-.anom-list-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#fff}
+.anom-list-title{font-family:'Satoshi',sans-serif;font-size:13px;font-weight:700;color:var(--body)}
 .anom-list-count{font-size:11px;color:var(--muted)}
 .anom-item{display:flex;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border);align-items:flex-start}
 .anom-item:last-child{border-bottom:none}
@@ -199,64 +209,80 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
 .ap{font-size:9px;font-weight:700;letter-spacing:.5px;padding:3px 7px;border-radius:3px;text-transform:uppercase}
 .ap-c{background:rgba(239,68,68,.15);color:var(--danger)}
 .ap-w{background:rgba(249,115,22,.15);color:var(--warn)}
-.ap-i{background:rgba(46,108,184,.15);color:#7aabd9}
 .anom-ts{font-size:10px;font-family:monospace;color:var(--muted);margin-top:4px}
-.anom-body-name{font-size:12px;font-weight:600;color:#fff;margin-bottom:2px}
+.anom-body-name{font-size:12px;font-weight:600;color:var(--body);margin-bottom:2px}
 .anom-body-desc{font-size:11px;color:var(--muted);line-height:1.5}
-.anom-body-tool{font-size:10px;color:var(--border);margin-top:3px}
+.anom-body-tool{font-size:10px;color:var(--muted);opacity:.6;margin-top:3px}
 .result-actions{display:flex;gap:10px;margin-bottom:24px}
 
-/* ── CLIENTS PAGE ── */
+/* ── CLIENTS ── */
 .clients-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
 .client-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;transition:border-color .2s;cursor:pointer}
 .client-card:hover{border-color:var(--muted)}
-.client-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:#fff;margin-bottom:4px}
+.client-name{font-family:'Satoshi',sans-serif;font-size:15px;font-weight:700;color:var(--body);margin-bottom:4px}
 .client-meta{font-size:11px;color:var(--muted);margin-bottom:12px}
 .client-stats{display:flex;gap:16px}
 .cs-item{font-size:11px;color:var(--muted)}
-.cs-val{font-size:14px;font-weight:600;color:#fff;display:block}
+.cs-val{font-size:14px;font-weight:600;color:var(--body);display:block}
 
 /* ── ANALYTICS ── */
 .analytics-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px}
 .chart-placeholder{background:var(--card);border-radius:8px;height:180px;display:flex;align-items:flex-end;justify-content:space-around;padding:16px;gap:6px}
 .bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
 .bar-visual{border-radius:3px 3px 0 0;background:var(--amber);width:100%;transition:height .5s;opacity:.8}
-.bar-lbl{font-size:9px;color:var(--muted);text-align:center}
+.bar-lbl{font-size:9px;color:var(--muted)}
 .bar-val-lbl{font-size:9px;color:var(--amber);font-weight:600}
 .breakdown-list{display:flex;flex-direction:column;gap:8px}
 .bl-item{display:flex;align-items:center;justify-content:space-between;font-size:12px}
 .bl-label{color:var(--muted);display:flex;align-items:center;gap:6px}
 .bl-dot{width:8px;height:8px;border-radius:50%}
-.bl-val{color:#fff;font-weight:600}
+.bl-val{color:var(--body);font-weight:600}
+.divider{height:1px;background:var(--border);margin:16px 0}
+
+/* ── SETTINGS PROFILE ── */
+.profile-row{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+.profile-avatar-lg{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Satoshi',sans-serif;font-size:26px;font-weight:800;color:#fff;background-size:cover;background-position:center;flex-shrink:0}
+.profile-upload-btn{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--body);cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif}
+.profile-upload-btn:hover{border-color:var(--amber);color:var(--amber)}
+.profile-remove-btn{background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;text-decoration:underline;margin-left:8px;font-family:'Inter',sans-serif}
+.profile-remove-btn:hover{color:var(--danger)}
+.appearance-row{display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--card);border-radius:8px;margin-bottom:10px}
+.ar-left{display:flex;align-items:center;gap:12px}
+.ar-icon{font-size:18px}
+.ar-title{font-size:13px;font-weight:600;color:var(--body)}
+.ar-desc{font-size:11px;color:var(--muted);margin-top:1px}
+.mode-switch{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:3px;gap:3px}
+.mode-opt{padding:7px 16px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);transition:all .2s;display:flex;align-items:center;gap:6px}
+.mode-opt.active{background:var(--amber);color:#0A1628}
+.tag{display:inline-block;font-size:10px;font-weight:500;padding:2px 8px;border-radius:3px;background:var(--card);color:var(--muted);border:1px solid var(--border)}
+.tag.urgent{background:rgba(239,68,68,.1);color:var(--danger);border-color:rgba(239,68,68,.3)}
+.tag.standard{background:rgba(52,211,153,.1);color:var(--success);border-color:rgba(52,211,153,.3)}
+.tag.elevated{background:rgba(249,115,22,.1);color:var(--warn);border-color:rgba(249,115,22,.3)}
+.gap-row{display:flex;gap:10px;align-items:center}
 
 /* ── MODAL ── */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center}
 .modal-overlay.show{display:flex}
 .modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;width:100%;max-width:480px;position:relative}
-.modal-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#fff;margin-bottom:4px}
+.modal-title{font-family:'Satoshi',sans-serif;font-size:18px;font-weight:800;color:var(--body);margin-bottom:4px}
 .modal-sub{font-size:12px;color:var(--muted);margin-bottom:24px}
 .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;line-height:1}
-.modal-close:hover{color:#fff}
-
-/* ── TAGS ── */
-.tag{display:inline-block;font-size:10px;font-weight:500;padding:2px 8px;border-radius:3px;background:var(--card);color:var(--muted);border:1px solid var(--border)}
-.tag.urgent{background:rgba(239,68,68,.1);color:var(--danger);border-color:rgba(239,68,68,.3)}
-.tag.standard{background:rgba(52,211,153,.1);color:var(--success);border-color:rgba(52,211,153,.3)}
-.tag.elevated{background:rgba(249,115,22,.1);color:var(--warn);border-color:rgba(249,115,22,.3)}
-
-/* ── MISC ── */
-.divider{height:1px;background:var(--border);margin:16px 0}
-.text-muted{color:var(--muted);font-size:12px}
-.text-amber{color:var(--amber)}
-.fw6{font-weight:600}
-.mt8{margin-top:8px}
-.gap-row{display:flex;gap:10px;align-items:center}
+.modal-close:hover{color:var(--body)}
 </style></head><body>
 
 <!-- ══════════════ LOGIN ══════════════ -->
 <div id="login-screen">
   <div class="login-card">
-    <div class="login-logo">Revlar<span>.</span></div>
+    <div class="login-logo-wrap">
+      <svg class="logo-mark" width="64" height="58" viewBox="0 0 88 80" fill="none">
+        <path d="M44 10 L76 66" stroke="var(--logo-stroke)" stroke-width="5.5" stroke-linecap="round"/>
+        <path d="M12 66 L44 10" stroke="var(--logo-stroke)" stroke-width="5.5" stroke-linecap="round"/>
+        <path d="M12 66 L34 66" stroke="var(--logo-stroke)" stroke-width="5.5" stroke-linecap="round"/>
+        <path d="M34 66 L54 66" stroke="var(--amber)" stroke-width="5.5" stroke-linecap="round"/>
+        <path d="M54 66 L76 66" stroke="var(--logo-faint)" stroke-width="5.5" stroke-linecap="round"/>
+        <circle cx="44" cy="66" r="5.5" fill="var(--logo-stroke)"/>
+      </svg>
+    </div>
     <div class="login-sub">Analyst Portal — Secure Access</div>
     <div class="login-badge">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -266,12 +292,12 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
       <label class="field-label">Select Analyst</label>
       <div class="user-select">
         <div class="user-btn" id="btn-founder" onclick="selectUser('founder')">
-          <div class="user-btn-avatar" style="background:#4A90D9">FO</div>
+          <div class="user-btn-avatar" id="login-av-founder" style="background:#4A90D9">FO</div>
           <div class="user-btn-name">Founder</div>
           <div class="user-btn-role">Principal Analyst</div>
         </div>
         <div class="user-btn" id="btn-cofounder" onclick="selectUser('cofounder')">
-          <div class="user-btn-avatar" style="background:#a78bfa">CO</div>
+          <div class="user-btn-avatar" id="login-av-cofounder" style="background:#a78bfa">CO</div>
           <div class="user-btn-name">Co-Founder</div>
           <div class="user-btn-role">Senior Analyst</div>
         </div>
@@ -282,22 +308,32 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
       <input class="field-input" type="password" id="pw-input" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()"/>
     </div>
     <button class="login-btn" onclick="doLogin()">Sign In →</button>
-    <div class="login-error" id="login-error">Incorrect password or no user selected. Please try again.</div>
-    <div style="margin-top:20px;font-size:10px;color:#1e3a5f;text-align:center">Demo passwords — Founder: <strong style="color:#2e4a6a">founder123</strong> · Co-Founder: <strong style="color:#2e4a6a">cofounder123</strong></div>
+    <div class="login-error" id="login-error"></div>
+    <div style="margin-top:20px;font-size:10px;color:var(--muted);opacity:.6;text-align:center">Demo — Founder: <strong>founder123</strong> · Co-Founder: <strong>cofounder123</strong></div>
   </div>
 </div>
 
 <!-- ══════════════ APP ══════════════ -->
-<div id="app" style="display:none;flex-direction:column;height:100vh">
+<div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="t-logo">Revlar<span>.</span> <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:8px;font-family:'Inter',sans-serif">Detection Portal</span></div>
+    <div class="t-left">
+      <svg class="logo-mark" width="30" height="27" viewBox="0 0 88 80" fill="none">
+        <path d="M44 10 L76 66" stroke="var(--logo-stroke)" stroke-width="5.5" stroke-linecap="round"/>
+        <path d="M12 66 L44 10" stroke="var(--logo-stroke)" stroke-width="5.5" stroke-linecap="round"/>
+        <path d="M12 66 L34 66" stroke="var(--logo-stroke)" stroke-width="5.5" stroke-linecap="round"/>
+        <path d="M34 66 L54 66" stroke="var(--amber)" stroke-width="5.5" stroke-linecap="round"/>
+        <path d="M54 66 L76 66" stroke="var(--logo-faint)" stroke-width="5.5" stroke-linecap="round"/>
+        <circle cx="44" cy="66" r="5.5" fill="var(--logo-stroke)"/>
+      </svg>
+      <span class="t-portal-label">Detection Portal</span>
+    </div>
     <div class="t-right">
-      <div class="t-notif">
-        <span style="font-size:18px;cursor:pointer">🔔</span>
-        <div class="t-notif-dot"></div>
+      <div class="theme-toggle" onclick="toggleTheme()" title="Toggle light / dark">
+        <div class="theme-toggle-knob" id="theme-knob">🌙</div>
       </div>
-      <div class="t-user" id="topbar-user">
+      <div class="t-notif">🔔<div class="t-notif-dot"></div></div>
+      <div class="t-user">
         <div class="t-avatar" id="topbar-avatar"></div>
         <div><div class="t-uname" id="topbar-name"></div><div class="t-role" id="topbar-role"></div></div>
       </div>
@@ -314,7 +350,7 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Case Work</div>
-        <div class="nav-item" onclick="showPage('new-case',this)"><span class="nav-item-icon">➕</span>New Submission<span class="nav-badge" id="badge-new">1</span></div>
+        <div class="nav-item" onclick="showPage('new-case',this)"><span class="nav-item-icon">➕</span>New Submission<span class="nav-badge">1</span></div>
         <div class="nav-item" onclick="showPage('cases',this)"><span class="nav-item-icon">📋</span>All Cases<span class="nav-badge" id="badge-cases">6</span></div>
         <div class="nav-item" onclick="showPage('reports',this)"><span class="nav-item-icon">📄</span>Reports</div>
       </div>
@@ -328,56 +364,43 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
         <div class="nav-item" onclick="showPage('activity',this)"><span class="nav-item-icon">🔍</span>Activity Log</div>
         <div class="nav-item" onclick="showPage('settings',this)"><span class="nav-item-icon">⚙️</span>Settings</div>
       </div>
-      <div class="sidebar-footer">
-        <div class="sf-version">Revlar Portal v1.0 · June 2026</div>
-      </div>
+      <div class="sidebar-footer"><div class="sf-version">Revlar Portal v1.1 · 2026</div></div>
     </div>
 
-    <!-- MAIN CONTENT -->
+    <!-- MAIN -->
     <div class="main">
 
-      <!-- ── DASHBOARD ── -->
+      <!-- DASHBOARD -->
       <div class="page active" id="page-dashboard">
         <div class="page-header">
           <div><div class="page-title" id="dash-greeting">Good morning</div><div class="page-sub">Here's what's happening at Revlar today.</div></div>
           <button class="btn btn-primary" onclick="showPage('new-case',document.querySelector('.nav-item:nth-child(2)'))">➕ New Submission</button>
         </div>
         <div class="stat-grid">
-          <div class="stat-card highlight"><div class="stat-val" id="stat-total">6</div><div class="stat-label">Total Cases</div><div class="stat-delta delta-up">↑ 2 this week</div></div>
-          <div class="stat-card"><div class="stat-val" id="stat-open">2</div><div class="stat-label">Active Cases</div><div class="stat-delta delta-up">↑ In progress</div></div>
-          <div class="stat-card"><div class="stat-val" id="stat-revenue">$4,200</div><div class="stat-label">Revenue This Month</div><div class="stat-delta delta-up">↑ 18% vs last month</div></div>
-          <div class="stat-card"><div class="stat-val" id="stat-avg">91%</div><div class="stat-label">Avg Confidence Score</div><div class="stat-delta">Across all cases</div></div>
+          <div class="stat-card highlight"><div class="stat-val">6</div><div class="stat-label">Total Cases</div><div class="stat-delta delta-up">↑ 2 this week</div></div>
+          <div class="stat-card"><div class="stat-val">2</div><div class="stat-label">Active Cases</div><div class="stat-delta delta-up">↑ In progress</div></div>
+          <div class="stat-card"><div class="stat-val">$4,200</div><div class="stat-label">Revenue This Month</div><div class="stat-delta delta-up">↑ 18%</div></div>
+          <div class="stat-card"><div class="stat-val">91%</div><div class="stat-label">Avg Confidence</div><div class="stat-delta">All cases</div></div>
         </div>
-
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-          <!-- RECENT CASES -->
           <div class="card">
             <div class="card-header"><div class="card-title">Recent Cases</div><button class="btn btn-secondary" onclick="showPage('cases',null)" style="font-size:11px;padding:5px 10px">View All</button></div>
-            <div class="card-body" style="padding:0">
-              <table class="activity-table" id="dash-recent-table"></table>
-            </div>
+            <div style="padding:0"><table class="activity-table" id="dash-recent-table"></table></div>
           </div>
-          <!-- ACTIVITY FEED -->
           <div class="card">
             <div class="card-header"><div class="card-title">Activity Feed</div></div>
-            <div class="card-body" id="activity-feed" style="padding:12px 16px"></div>
+            <div id="activity-feed" style="padding:12px 16px"></div>
           </div>
         </div>
-
-        <!-- ANALYST BREAKDOWN -->
         <div class="card">
           <div class="card-header"><div class="card-title">Analyst Performance This Month</div></div>
-          <div class="card-body">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" id="analyst-breakdown"></div>
-          </div>
+          <div class="card-body"><div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" id="analyst-breakdown"></div></div>
         </div>
       </div>
 
-      <!-- ── NEW CASE ── -->
+      <!-- NEW CASE -->
       <div class="page" id="page-new-case">
-        <div class="page-header">
-          <div><div class="page-title">New Submission</div><div class="page-sub">Upload content for deepfake analysis. All files are AES-256 encrypted on receipt.</div></div>
-        </div>
+        <div class="page-header"><div><div class="page-title">New Submission</div><div class="page-sub">Upload content for analysis. All files are AES-256 encrypted on receipt.</div></div></div>
         <div class="card" style="margin-bottom:16px">
           <div class="card-header"><div class="card-title">Case Details</div></div>
           <div class="card-body">
@@ -390,15 +413,15 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
               <div class="form-field"><label class="form-label">Urgency</label><select class="form-select" id="nc-urgency"><option>Standard — 72 hours</option><option>Elevated — 48 hours</option><option>Rush — 8 hours</option></select></div>
               <div class="form-field"><label class="form-label">Assigned Analyst</label><input class="form-input" id="nc-analyst" readonly style="color:var(--amber)"/></div>
             </div>
-            <div class="form-field"><label class="form-label">Notes / Context</label><textarea class="form-input" id="nc-notes" rows="2" placeholder="Describe the content and any relevant context..."></textarea></div>
+            <div class="form-field"><label class="form-label">Notes / Context</label><textarea class="form-input" id="nc-notes" rows="2" placeholder="Describe the content and relevant context..."></textarea></div>
           </div>
         </div>
         <div class="upload-zone" id="nc-drop" onclick="document.getElementById('nc-file').click()" ondragover="ncDrag(event)" ondragleave="ncDragLeave(event)" ondrop="ncDrop(event)">
           <div class="uz-icon">📁</div>
           <div class="uz-title">Drop file here or click to upload</div>
-          <div class="uz-sub">Video, audio, or image content for deepfake analysis</div>
+          <div class="uz-sub">Video, audio, or image content</div>
           <button class="btn btn-primary" onclick="event.stopPropagation();document.getElementById('nc-file').click()">Select File</button>
-          <div style="font-size:11px;color:var(--border);margin-top:12px">Supported: MP4 MOV AVI MP3 WAV JPG PNG · Max 2GB</div>
+          <div style="font-size:11px;color:var(--muted);opacity:.6;margin-top:12px">MP4 MOV AVI MP3 WAV JPG PNG · Max 2GB</div>
         </div>
         <input type="file" id="nc-file" accept="video/*,audio/*,image/*" style="display:none" onchange="ncHandleFile(this.files[0])"/>
         <div class="file-info-bar" id="nc-file-info">
@@ -416,13 +439,13 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
           <div class="tool-row"><div class="tool-icon">👤</div><div class="tool-name">Human Expert Review</div><div class="tool-status ts-wait" id="ts-human">Queued after automated analysis</div></div>
         </div>
         <div class="results-panel" id="nc-results">
-          <div class="verdict-banner vb-manip" id="nc-verdict-banner">
-            <div><div class="vb-label">Verification Verdict</div><div class="vb-verdict vb-m" id="nc-verdict-text">MANIPULATED</div><div class="vb-sub" id="nc-verdict-sub"></div></div>
-            <div class="vb-score"><div class="vb-score-num" id="nc-score">82</div><div class="vb-score-lbl">/ 100 Confidence</div></div>
+          <div class="verdict-banner vb-manip">
+            <div><div class="vb-label">Verification Verdict</div><div class="vb-verdict vb-m">MANIPULATED</div><div class="vb-sub">High confidence — 5 of 5 engines flagged content as synthetic</div></div>
+            <div class="vb-score"><div class="vb-score-num">82</div><div class="vb-score-lbl">/ 100 Confidence</div></div>
             <div class="vb-analyst"><div class="vb-analyst-lbl">Analysed By</div><div class="vb-analyst-name" id="nc-analyst-display"></div><div class="vb-analyst-time" id="nc-time-display"></div></div>
           </div>
           <div class="tools-grid" id="nc-tools-grid"></div>
-          <div class="anom-list"><div class="anom-list-header"><div class="anom-list-title">Detected Anomalies</div><div class="anom-list-count" id="nc-anom-count"></div></div><div id="nc-anom-body"></div></div>
+          <div class="anom-list"><div class="anom-list-header"><div class="anom-list-title">Detected Anomalies</div><div class="anom-list-count">5 findings · 4 Critical · 1 Warning</div></div><div id="nc-anom-body"></div></div>
           <div class="result-actions">
             <button class="btn btn-primary" onclick="generateReport()">📄 Generate Report</button>
             <button class="btn btn-secondary" onclick="saveCase()">💾 Save Case</button>
@@ -431,46 +454,34 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
         </div>
       </div>
 
-      <!-- ── ALL CASES ── -->
+      <!-- ALL CASES -->
       <div class="page" id="page-cases">
-        <div class="page-header">
-          <div><div class="page-title">All Cases</div><div class="page-sub">Complete case history across all analysts.</div></div>
-          <button class="btn btn-primary" onclick="showPage('new-case',null)">➕ New Submission</button>
-        </div>
+        <div class="page-header"><div><div class="page-title">All Cases</div><div class="page-sub">Complete case history across all analysts.</div></div>
+          <button class="btn btn-primary" onclick="showPage('new-case',null)">➕ New Submission</button></div>
         <div class="card">
-          <div class="card-header">
-            <div class="card-title">Case Register</div>
-            <div style="display:flex;gap:8px">
-              <select class="form-select" style="width:auto;font-size:11px;padding:5px 8px" onchange="filterCases(this.value)" id="case-filter">
-                <option value="all">All Cases</option>
-                <option value="Founder">Founder Only</option>
-                <option value="Co-Founder">Co-Founder Only</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Complete">Complete</option>
-              </select>
-            </div>
+          <div class="card-header"><div class="card-title">Case Register</div>
+            <select class="form-select" style="width:auto;font-size:11px;padding:5px 8px" onchange="filterCases(this.value)">
+              <option value="all">All Cases</option><option value="Founder">Founder Only</option><option value="Co-Founder">Co-Founder Only</option><option value="In Progress">In Progress</option><option value="Complete">Complete</option>
+            </select>
           </div>
           <div style="padding:0"><table class="activity-table" id="all-cases-table"></table></div>
         </div>
       </div>
 
-      <!-- ── REPORTS ── -->
+      <!-- REPORTS -->
       <div class="page" id="page-reports">
         <div class="page-header"><div><div class="page-title">Reports</div><div class="page-sub">Signed verification reports ready for delivery.</div></div></div>
-        <div class="card"><div class="card-header"><div class="card-title">Report Archive</div></div>
-        <div style="padding:0"><table class="activity-table" id="reports-table"></table></div></div>
+        <div class="card"><div class="card-header"><div class="card-title">Report Archive</div></div><div style="padding:0"><table class="activity-table" id="reports-table"></table></div></div>
       </div>
 
-      <!-- ── CLIENTS ── -->
+      <!-- CLIENTS -->
       <div class="page" id="page-clients">
-        <div class="page-header">
-          <div><div class="page-title">Clients</div><div class="page-sub">Client database and case history.</div></div>
-          <button class="btn btn-primary" onclick="document.getElementById('add-client-modal').classList.add('show')">➕ Add Client</button>
-        </div>
+        <div class="page-header"><div><div class="page-title">Clients</div><div class="page-sub">Client database and case history.</div></div>
+          <button class="btn btn-primary" onclick="document.getElementById('add-client-modal').classList.add('show')">➕ Add Client</button></div>
         <div class="clients-grid" id="clients-grid"></div>
       </div>
 
-      <!-- ── ANALYTICS ── -->
+      <!-- ANALYTICS -->
       <div class="page" id="page-analytics">
         <div class="page-header"><div><div class="page-title">Analytics</div><div class="page-sub">Business performance and case metrics.</div></div></div>
         <div class="stat-grid">
@@ -480,14 +491,8 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
           <div class="stat-card"><div class="stat-val">83%</div><div class="stat-label">Manipulated Rate</div></div>
         </div>
         <div class="analytics-grid">
-          <div class="card">
-            <div class="card-header"><div class="card-title">Cases Per Month</div></div>
-            <div class="card-body">
-              <div class="chart-placeholder" id="chart-bars"></div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header"><div class="card-title">Verdict Breakdown</div></div>
+          <div class="card"><div class="card-header"><div class="card-title">Cases Per Month</div></div><div class="card-body"><div class="chart-placeholder" id="chart-bars"></div></div></div>
+          <div class="card"><div class="card-header"><div class="card-title">Verdict Breakdown</div></div>
             <div class="card-body">
               <div class="breakdown-list">
                 <div class="bl-item"><div class="bl-label"><div class="bl-dot" style="background:var(--danger)"></div>Manipulated</div><div class="bl-val">83%</div></div>
@@ -502,87 +507,93 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
             </div>
           </div>
         </div>
-        <div class="card">
-          <div class="card-header"><div class="card-title">Revenue Pipeline</div></div>
-          <div class="card-body">
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
-              <div><div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">Per-Report Revenue</div><div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff">$2,100</div><div style="font-size:11px;color:var(--muted);margin-top:2px">6 reports avg $350</div></div>
-              <div><div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">Retainer Revenue</div><div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--amber)">$2,100</div><div style="font-size:11px;color:var(--muted);margin-top:2px">1 retainer @ $2,100</div></div>
-              <div><div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">Monthly Total</div><div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--success)">$4,200</div><div style="font-size:11px;color:var(--success);margin-top:2px">↑ On track</div></div>
-            </div>
-          </div>
-        </div>
       </div>
 
-      <!-- ── ACTIVITY LOG ── -->
+      <!-- ACTIVITY -->
       <div class="page" id="page-activity">
         <div class="page-header"><div><div class="page-title">Activity Log</div><div class="page-sub">Full audit trail of all analyst actions.</div></div></div>
-        <div class="card"><div class="card-header"><div class="card-title">System Log</div></div>
-        <div style="padding:0"><table class="activity-table" id="activity-log-table"></table></div></div>
+        <div class="card"><div class="card-header"><div class="card-title">System Log</div></div><div style="padding:0"><table class="activity-table" id="activity-log-table"></table></div></div>
       </div>
 
-      <!-- ── SETTINGS ── -->
+      <!-- SETTINGS -->
       <div class="page" id="page-settings">
-        <div class="page-header"><div><div class="page-title">Settings</div><div class="page-sub">Portal configuration and analyst management.</div></div></div>
+        <div class="page-header"><div><div class="page-title">Settings</div><div class="page-sub">Profile, appearance, and portal configuration.</div></div></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+          <!-- MY PROFILE -->
+          <div class="card">
+            <div class="card-header"><div class="card-title">My Profile</div></div>
+            <div class="card-body">
+              <div class="profile-row">
+                <div class="profile-avatar-lg" id="settings-avatar"></div>
+                <div>
+                  <div style="font-size:14px;font-weight:600;color:var(--body)" id="settings-name"></div>
+                  <div style="font-size:11px;color:var(--muted);margin-bottom:10px" id="settings-role"></div>
+                  <button class="profile-upload-btn" onclick="document.getElementById('avatar-upload').click()">📷 Upload Photo</button>
+                  <button class="profile-remove-btn" id="remove-avatar-btn" onclick="removeAvatar()" style="display:none">Remove</button>
+                </div>
+              </div>
+              <input type="file" id="avatar-upload" accept="image/*" style="display:none" onchange="handleAvatarUpload(this.files[0])"/>
+              <div style="font-size:11px;color:var(--muted);line-height:1.5">Upload a square image for best results. Your photo appears in the top bar, login screen, and on activity records.</div>
+            </div>
+          </div>
+
+          <!-- APPEARANCE -->
+          <div class="card">
+            <div class="card-header"><div class="card-title">Appearance</div></div>
+            <div class="card-body">
+              <div class="appearance-row">
+                <div class="ar-left">
+                  <span class="ar-icon">🎨</span>
+                  <div><div class="ar-title">Theme</div><div class="ar-desc">Switch between dark and light mode</div></div>
+                </div>
+                <div class="mode-switch">
+                  <div class="mode-opt" id="mode-dark" onclick="setTheme('dark')">🌙 Dark</div>
+                  <div class="mode-opt" id="mode-light" onclick="setTheme('light')">☀️ Light</div>
+                </div>
+              </div>
+              <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-top:4px">Your preference applies instantly across the entire portal.</div>
+            </div>
+          </div>
+
+          <!-- ANALYST ACCOUNTS -->
           <div class="card">
             <div class="card-header"><div class="card-title">Analyst Accounts</div></div>
             <div class="card-body">
               <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--card);border-radius:8px;margin-bottom:10px">
-                <div style="width:36px;height:36px;border-radius:50%;background:#4A90D9;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:#fff">FO</div>
-                <div><div style="font-size:13px;font-weight:600;color:#fff">Founder</div><div style="font-size:11px;color:var(--muted)">Principal Analyst · 70% ownership</div></div>
+                <div style="width:36px;height:36px;border-radius:50%;background:#4A90D9;display:flex;align-items:center;justify-content:center;font-family:'Satoshi',sans-serif;font-size:13px;font-weight:800;color:#fff">FO</div>
+                <div><div style="font-size:13px;font-weight:600;color:var(--body)">Founder</div><div style="font-size:11px;color:var(--muted)">Principal Analyst · 70%</div></div>
                 <span class="tag standard" style="margin-left:auto">Active</span>
               </div>
               <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--card);border-radius:8px">
-                <div style="width:36px;height:36px;border-radius:50%;background:var(--purple);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:#fff">CO</div>
-                <div><div style="font-size:13px;font-weight:600;color:#fff">Co-Founder</div><div style="font-size:11px;color:var(--muted)">Senior Analyst · 30% ownership</div></div>
+                <div style="width:36px;height:36px;border-radius:50%;background:#a78bfa;display:flex;align-items:center;justify-content:center;font-family:'Satoshi',sans-serif;font-size:13px;font-weight:800;color:#fff">CO</div>
+                <div><div style="font-size:13px;font-weight:600;color:var(--body)">Co-Founder</div><div style="font-size:11px;color:var(--muted)">Senior Analyst · 30%</div></div>
                 <span class="tag standard" style="margin-left:auto">Active</span>
               </div>
             </div>
           </div>
-          <div class="card">
-            <div class="card-header"><div class="card-title">Detection Stack</div></div>
-            <div class="card-body">
-              <div style="display:flex;flex-direction:column;gap:8px">
-                <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span style="color:var(--body)">Hive Moderation API</span><span class="tag">v3.2.1</span></div>
-                <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span style="color:var(--body)">Sensity AI</span><span class="tag">v2.8.0</span></div>
-                <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span style="color:var(--body)">Intel FakeCatcher</span><span class="tag">v1.4.0</span></div>
-                <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span style="color:var(--body)">Resemble Detect</span><span class="tag">v1.1.3</span></div>
-                <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span style="color:var(--body)">MS Video Authenticator</span><span class="tag">v2.0</span></div>
-              </div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header"><div class="card-title">Portal Settings</div></div>
-            <div class="card-body">
-              <div style="display:flex;flex-direction:column;gap:12px;font-size:12px;color:var(--muted)">
-                <div class="gap-row"><span style="flex:1">Auto-generate case reference</span><span class="tag standard">Enabled</span></div>
-                <div class="gap-row"><span style="flex:1">SHA-256 hash on receipt</span><span class="tag standard">Enabled</span></div>
-                <div class="gap-row"><span style="flex:1">Session activity logging</span><span class="tag standard">Enabled</span></div>
-                <div class="gap-row"><span style="flex:1">7-year case retention</span><span class="tag standard">Enabled</span></div>
-                <div class="gap-row"><span style="flex:1">E&O Insurance</span><span class="tag urgent">Not set up</span></div>
-              </div>
-            </div>
-          </div>
+
+          <!-- COMPANY -->
           <div class="card">
             <div class="card-header"><div class="card-title">Company Info</div></div>
             <div class="card-body">
               <div style="display:flex;flex-direction:column;gap:10px;font-size:12px">
-                <div><div style="color:var(--muted);margin-bottom:2px">Company</div><div style="color:#fff;font-weight:600">Revlar LLC</div></div>
+                <div><div style="color:var(--muted);margin-bottom:2px">Company</div><div style="color:var(--body);font-weight:600">Revlar LLC</div></div>
                 <div><div style="color:var(--muted);margin-bottom:2px">Website</div><div style="color:var(--amber)">revlar.io</div></div>
-                <div><div style="color:var(--muted);margin-bottom:2px">Cases Email</div><div style="color:#fff">cases@revlar.io</div></div>
-                <div><div style="color:var(--muted);margin-bottom:2px">Portal Version</div><div style="color:#fff">v1.0 · June 2026</div></div>
+                <div><div style="color:var(--muted);margin-bottom:2px">Portal</div><div style="color:var(--amber)">portal.revlar.io</div></div>
+                <div><div style="color:var(--muted);margin-bottom:2px">Cases Email</div><div style="color:var(--body)">cases@revlar.io</div></div>
               </div>
             </div>
           </div>
+
         </div>
       </div>
 
-    </div><!-- /main -->
-  </div><!-- /body-layout -->
-</div><!-- /app -->
+    </div>
+  </div>
+</div>
 
-<!-- ── ADD CLIENT MODAL ── -->
+<!-- ADD CLIENT MODAL -->
 <div class="modal-overlay" id="add-client-modal">
   <div class="modal">
     <button class="modal-close" onclick="document.getElementById('add-client-modal').classList.remove('show')">✕</button>
@@ -602,34 +613,27 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
 </div>
 
 <script>
-// ══════════════════════════════════════
-// DATA STORE
-// ══════════════════════════════════════
 const USERS={
-  founder:{id:'founder',name:'Founder',role:'Principal Analyst',color:'#4A90D9',initials:'FO',password:'founder123'},
-  cofounder:{id:'cofounder',name:'Co-Founder',role:'Senior Analyst',color:'#a78bfa',initials:'CO',password:'cofounder123'}
+  founder:{id:'founder',name:'Founder',role:'Principal Analyst',color:'#4A90D9',initials:'FO',password:'founder123',avatar:null},
+  cofounder:{id:'cofounder',name:'Co-Founder',role:'Senior Analyst',color:'#a78bfa',initials:'CO',password:'cofounder123',avatar:null}
 };
-
-let currentUser=null;
-let selectedUser=null;
+let currentUser=null,selectedUser=null,theme='dark';
 
 let cases=[
-  {id:'RVL-202606-1001',client:'Meridian Capital Group',type:'Video',verdict:'MANIPULATED',score:82,status:'Complete',analyst:'Founder',date:'Jun 22 2026',urgency:'Rush',notes:'CEO impersonation video'},
-  {id:'RVL-202606-1002',client:'Hargreaves & Sutton LLP',type:'Audio',verdict:'AUTHENTIC',score:12,status:'Complete',analyst:'Co-Founder',date:'Jun 21 2026',urgency:'Standard',notes:'Voice recording evidence'},
-  {id:'RVL-202606-1003',client:'Apex Insurance Group',type:'Video',verdict:'MANIPULATED',score:91,status:'Complete',analyst:'Founder',date:'Jun 20 2026',urgency:'Elevated',notes:'Claims fraud video'},
-  {id:'RVL-202606-1004',client:'The Tribune Media',type:'Image',verdict:'INCONCLUSIVE',score:54,status:'Complete',analyst:'Founder',date:'Jun 19 2026',urgency:'Standard',notes:'Photograph verification'},
-  {id:'RVL-202606-1005',client:'Senator M. Reynolds',type:'Video',verdict:'MANIPULATED',score:96,status:'In Progress',analyst:'Co-Founder',date:'Jun 23 2026',urgency:'Rush',notes:'Political deepfake'},
-  {id:'RVL-202606-1006',client:'Hargreaves & Sutton LLP',type:'Audio',verdict:'MANIPULATED',score:88,status:'In Progress',analyst:'Founder',date:'Jun 24 2026',urgency:'Elevated',notes:'Second submission'},
+  {id:'RVL-202606-1001',client:'Meridian Capital Group',type:'Video',verdict:'MANIPULATED',score:82,status:'Complete',analyst:'Founder',date:'Jun 22 2026',urgency:'Rush'},
+  {id:'RVL-202606-1002',client:'Hargreaves & Sutton LLP',type:'Audio',verdict:'AUTHENTIC',score:12,status:'Complete',analyst:'Co-Founder',date:'Jun 21 2026',urgency:'Standard'},
+  {id:'RVL-202606-1003',client:'Apex Insurance Group',type:'Video',verdict:'MANIPULATED',score:91,status:'Complete',analyst:'Founder',date:'Jun 20 2026',urgency:'Elevated'},
+  {id:'RVL-202606-1004',client:'The Tribune Media',type:'Image',verdict:'INCONCLUSIVE',score:54,status:'Complete',analyst:'Founder',date:'Jun 19 2026',urgency:'Standard'},
+  {id:'RVL-202606-1005',client:'Senator M. Reynolds',type:'Video',verdict:'MANIPULATED',score:96,status:'In Progress',analyst:'Co-Founder',date:'Jun 23 2026',urgency:'Rush'},
+  {id:'RVL-202606-1006',client:'Hargreaves & Sutton LLP',type:'Audio',verdict:'MANIPULATED',score:88,status:'In Progress',analyst:'Founder',date:'Jun 24 2026',urgency:'Elevated'},
 ];
-
 let clients=[
-  {name:'Meridian Capital Group',contact:'M. Holloway',type:'Corporation',email:'m.holloway@meridian.com'},
-  {name:'Hargreaves & Sutton LLP',contact:'J. Sutton',type:'Law Firm',email:'j.sutton@hs-law.com'},
-  {name:'Apex Insurance Group',contact:'R. Patel',type:'Insurance',email:'r.patel@apexins.com'},
-  {name:'The Tribune Media',contact:'C. Walsh',type:'Media Outlet',email:'c.walsh@tribune.com'},
-  {name:'Senator M. Reynolds',contact:'Office of M. Reynolds',type:'Public Figure',email:'office@reynolds.gov'},
+  {name:'Meridian Capital Group',contact:'M. Holloway',type:'Corporation'},
+  {name:'Hargreaves & Sutton LLP',contact:'J. Sutton',type:'Law Firm'},
+  {name:'Apex Insurance Group',contact:'R. Patel',type:'Insurance'},
+  {name:'The Tribune Media',contact:'C. Walsh',type:'Media Outlet'},
+  {name:'Senator M. Reynolds',contact:'Office',type:'Public Figure'},
 ];
-
 let activityLog=[
   {user:'Founder',action:'Completed case RVL-202606-1001',time:'Jun 22 · 19:41'},
   {user:'Co-Founder',action:'Completed case RVL-202606-1002',time:'Jun 21 · 14:22'},
@@ -639,28 +643,56 @@ let activityLog=[
   {user:'Founder',action:'Opened case RVL-202606-1006',time:'Jun 24 · 08:55'},
 ];
 
-// ══════════════════════════════════════
-// AUTH
-// ══════════════════════════════════════
+// ── THEME ──
+function setTheme(t){
+  theme=t;
+  if(t==='light')document.documentElement.setAttribute('data-theme','light');
+  else document.documentElement.removeAttribute('data-theme');
+  document.getElementById('theme-knob').textContent=t==='light'?'☀️':'🌙';
+  const md=document.getElementById('mode-dark'),ml=document.getElementById('mode-light');
+  if(md&&ml){md.classList.toggle('active',t==='dark');ml.classList.toggle('active',t==='light');}
+}
+function toggleTheme(){setTheme(theme==='dark'?'light':'dark');}
+
+// ── AVATAR ──
+function avatarStyle(u){return u.avatar?`background-image:url(${u.avatar});color:transparent`:`background:${u.color}`;}
+function refreshAvatars(){
+  ['founder','cofounder'].forEach(id=>{
+    const u=USERS[id],el=document.getElementById('login-av-'+id);
+    if(el){el.style.cssText=avatarStyle(u);el.textContent=u.avatar?'':u.initials;}
+  });
+  if(currentUser){
+    const tb=document.getElementById('topbar-avatar');
+    tb.style.cssText=avatarStyle(currentUser);tb.textContent=currentUser.avatar?'':currentUser.initials;
+    const sa=document.getElementById('settings-avatar');
+    if(sa){sa.style.cssText=avatarStyle(currentUser);sa.textContent=currentUser.avatar?'':currentUser.initials;}
+    document.getElementById('remove-avatar-btn').style.display=currentUser.avatar?'inline':'none';
+  }
+}
+function handleAvatarUpload(file){
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{currentUser.avatar=e.target.result;refreshAvatars();logActivity('Updated profile photo');renderActivityLog();};
+  reader.readAsDataURL(file);
+}
+function removeAvatar(){currentUser.avatar=null;refreshAvatars();document.getElementById('avatar-upload').value='';}
+
+// ── AUTH ──
 function selectUser(id){
   selectedUser=id;
   document.getElementById('btn-founder').classList.toggle('selected',id==='founder');
   document.getElementById('btn-cofounder').classList.toggle('selected',id==='cofounder');
 }
-
 function doLogin(){
-  const pw=document.getElementById('pw-input').value;
-  const err=document.getElementById('login-error');
-  if(!selectedUser||!pw){err.style.display='block';err.textContent='Please select an analyst and enter your password.';return;}
+  const pw=document.getElementById('pw-input').value,err=document.getElementById('login-error');
+  if(!selectedUser||!pw){err.style.display='block';err.textContent='Select an analyst and enter your password.';return;}
   const u=USERS[selectedUser];
   if(pw!==u.password){err.style.display='block';err.textContent='Incorrect password. Please try again.';document.getElementById('pw-input').value='';return;}
-  currentUser=u;
-  err.style.display='none';
+  currentUser=u;err.style.display='none';
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
   initApp();
 }
-
 function doLogout(){
   currentUser=null;selectedUser=null;
   document.getElementById('login-screen').style.display='flex';
@@ -670,40 +702,21 @@ function doLogout(){
   document.getElementById('btn-cofounder').classList.remove('selected');
 }
 
-// ══════════════════════════════════════
-// APP INIT
-// ══════════════════════════════════════
 function initApp(){
-  // Topbar
-  document.getElementById('topbar-avatar').textContent=currentUser.initials;
-  document.getElementById('topbar-avatar').style.background=currentUser.color;
   document.getElementById('topbar-name').textContent=currentUser.name;
   document.getElementById('topbar-role').textContent=currentUser.role;
-  // Greeting
+  document.getElementById('settings-name').textContent=currentUser.name;
+  document.getElementById('settings-role').textContent=currentUser.role;
   const h=new Date().getHours();
-  const g=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
-  document.getElementById('dash-greeting').textContent=g+', '+currentUser.name;
-  // New case analyst
+  document.getElementById('dash-greeting').textContent=(h<12?'Good morning':h<17?'Good afternoon':'Good evening')+', '+currentUser.name;
   document.getElementById('nc-analyst').value=currentUser.name;
-  // Case ref
+  setTheme(theme);
+  refreshAvatars();
   refreshCaseRef();
-  // Render all
-  renderDashboard();
-  renderAllCases(cases);
-  renderReports();
-  renderClients();
-  renderActivityLog();
-  renderAnalyticsChart();
+  renderDashboard();renderAllCases(cases);renderReports();renderClients();renderActivityLog();renderChart();
 }
+function refreshCaseRef(){document.getElementById('nc-ref').value='RVL-202606-'+(1007+cases.length);}
 
-function refreshCaseRef(){
-  const n=1007+cases.length;
-  document.getElementById('nc-ref').value='RVL-202606-'+n;
-}
-
-// ══════════════════════════════════════
-// NAVIGATION
-// ══════════════════════════════════════
 function showPage(id,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
@@ -715,265 +728,100 @@ function showPage(id,el){
   if(id==='activity')renderActivityLog();
 }
 
-// ══════════════════════════════════════
-// DASHBOARD
-// ══════════════════════════════════════
 function renderDashboard(){
-  // Stats
-  document.getElementById('stat-total').textContent=cases.length;
-  document.getElementById('stat-open').textContent=cases.filter(c=>c.status==='In Progress').length;
-  // Recent table
   const recent=cases.slice().reverse().slice(0,4);
-  const rt=document.getElementById('dash-recent-table');
-  rt.innerHTML=`<thead><tr><th>Case</th><th>Client</th><th>Analyst</th><th>Verdict</th><th>Status</th></tr></thead>
-  <tbody>${recent.map(c=>`<tr>
-    <td style="color:var(--amber);font-family:monospace;font-size:11px">${c.id}</td>
-    <td>${c.client}</td>
-    <td><span style="color:${USERS[c.analyst==='Founder'?'founder':'cofounder'].color};font-weight:600">${c.analyst}</span></td>
-    <td><span class="verdict-pill ${c.verdict==='MANIPULATED'?'vp-m':c.verdict==='AUTHENTIC'?'vp-a':'vp-i'}">${c.verdict}</span></td>
-    <td><span class="tag ${c.status==='Complete'?'standard':'elevated'}">${c.status}</span></td>
-  </tr>`).join('')}</tbody>`;
-  // Activity feed
-  const af=document.getElementById('activity-feed');
-  af.innerHTML=activityLog.slice().reverse().slice(0,6).map(a=>`
-    <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:12px">
-      <div style="width:28px;height:28px;border-radius:50%;background:${USERS[a.user==='Founder'?'founder':'cofounder'].color};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0">${USERS[a.user==='Founder'?'founder':'cofounder'].initials}</div>
-      <div><div style="font-size:12px;color:var(--body)">${a.action}</div><div style="font-size:10px;color:var(--muted);margin-top:2px">${a.time}</div></div>
-    </div>`).join('');
-  // Analyst breakdown
-  const ab=document.getElementById('analyst-breakdown');
-  ['founder','cofounder'].forEach(uid=>{
-    const u=USERS[uid];
-    const uc=cases.filter(c=>c.analyst===u.name);
-    const done=uc.filter(c=>c.status==='Complete').length;
-    ab.innerHTML+=(ab.innerHTML?'':'')+`
-    <div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-        <div style="width:32px;height:32px;border-radius:50%;background:${u.color};display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:12px;font-weight:800;color:#fff">${u.initials}</div>
-        <div><div style="font-size:13px;font-weight:600;color:#fff">${u.name}</div><div style="font-size:11px;color:var(--muted)">${u.role}</div></div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-        <div style="background:var(--card);border-radius:7px;padding:12px;text-align:center"><div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#fff">${uc.length}</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Total Cases</div></div>
-        <div style="background:var(--card);border-radius:7px;padding:12px;text-align:center"><div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--success)">${done}</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Complete</div></div>
-        <div style="background:var(--card);border-radius:7px;padding:12px;text-align:center"><div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--amber)">${uc.filter(c=>c.status==='In Progress').length}</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Active</div></div>
-      </div>
-    </div>`;
-  });
+  document.getElementById('dash-recent-table').innerHTML=`<thead><tr><th>Case</th><th>Client</th><th>Analyst</th><th>Verdict</th></tr></thead><tbody>${recent.map(c=>`<tr><td style="color:var(--amber);font-family:monospace;font-size:11px">${c.id}</td><td>${c.client}</td><td><span style="color:${USERS[c.analyst==='Founder'?'founder':'cofounder'].color};font-weight:600">${c.analyst}</span></td><td><span class="verdict-pill ${c.verdict==='MANIPULATED'?'vp-m':c.verdict==='AUTHENTIC'?'vp-a':'vp-i'}">${c.verdict}</span></td></tr>`).join('')}</tbody>`;
+  document.getElementById('activity-feed').innerHTML=activityLog.slice().reverse().slice(0,6).map(a=>`<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:12px"><div style="width:28px;height:28px;border-radius:50%;background:${USERS[a.user==='Founder'?'founder':'cofounder'].color};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0">${USERS[a.user==='Founder'?'founder':'cofounder'].initials}</div><div><div style="font-size:12px;color:var(--body)">${a.action}</div><div style="font-size:10px;color:var(--muted);margin-top:2px">${a.time}</div></div></div>`).join('');
+  let ab='';['founder','cofounder'].forEach(uid=>{const u=USERS[uid],uc=cases.filter(c=>c.analyst===u.name),done=uc.filter(c=>c.status==='Complete').length;ab+=`<div><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="width:32px;height:32px;border-radius:50%;background:${u.color};display:flex;align-items:center;justify-content:center;font-family:'Satoshi',sans-serif;font-size:12px;font-weight:800;color:#fff">${u.initials}</div><div><div style="font-size:13px;font-weight:600;color:var(--body)">${u.name}</div><div style="font-size:11px;color:var(--muted)">${u.role}</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px"><div style="background:var(--card);border-radius:7px;padding:12px;text-align:center"><div style="font-family:'Satoshi',sans-serif;font-size:20px;font-weight:800;color:var(--body)">${uc.length}</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Total</div></div><div style="background:var(--card);border-radius:7px;padding:12px;text-align:center"><div style="font-family:'Satoshi',sans-serif;font-size:20px;font-weight:800;color:var(--success)">${done}</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Complete</div></div><div style="background:var(--card);border-radius:7px;padding:12px;text-align:center"><div style="font-family:'Satoshi',sans-serif;font-size:20px;font-weight:800;color:var(--amber)">${uc.filter(c=>c.status==='In Progress').length}</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Active</div></div></div></div>`;});
+  document.getElementById('analyst-breakdown').innerHTML=ab;
 }
 
-// ══════════════════════════════════════
-// CASES
-// ══════════════════════════════════════
 function renderAllCases(list){
   const t=document.getElementById('all-cases-table');
-  if(!list.length){t.innerHTML='<tbody><tr><td colspan="8" class="empty-state"><div class="empty-icon">📋</div><div>No cases found.</div></td></tr></tbody>';return;}
-  t.innerHTML=`<thead><tr><th>Case ID</th><th>Client</th><th>Type</th><th>Analyst</th><th>Verdict</th><th>Score</th><th>Urgency</th><th>Status</th></tr></thead>
-  <tbody>${list.map(c=>`<tr>
-    <td style="color:var(--amber);font-family:monospace;font-size:11px">${c.id}</td>
-    <td style="font-weight:500">${c.client}</td>
-    <td style="color:var(--muted)">${c.type}</td>
-    <td><span style="color:${USERS[c.analyst==='Founder'?'founder':'cofounder'].color};font-weight:600">${c.analyst}</span></td>
-    <td><span class="verdict-pill ${c.verdict==='MANIPULATED'?'vp-m':c.verdict==='AUTHENTIC'?'vp-a':'vp-i'}">${c.verdict}</span></td>
-    <td><div class="score-bar-wrap"><div class="score-bar-track"><div class="score-bar-fill" style="width:${c.score}%;background:${c.score>75?'var(--danger)':c.score>40?'var(--warn)':'var(--success)'}"></div></div><span class="score-num">${c.score}</span></div></td>
-    <td><span class="tag ${c.urgency==='Rush'?'urgent':c.urgency==='Elevated'?'elevated':'standard'}">${c.urgency}</span></td>
-    <td><span class="tag ${c.status==='Complete'?'standard':'elevated'}">${c.status}</span></td>
-  </tr>`).join('')}</tbody>`;
+  if(!list.length){t.innerHTML='<tbody><tr><td colspan="8" class="empty-state"><div class="empty-icon">📋</div>No cases found.</td></tr></tbody>';return;}
+  t.innerHTML=`<thead><tr><th>Case ID</th><th>Client</th><th>Type</th><th>Analyst</th><th>Verdict</th><th>Score</th><th>Urgency</th><th>Status</th></tr></thead><tbody>${list.map(c=>`<tr><td style="color:var(--amber);font-family:monospace;font-size:11px">${c.id}</td><td style="font-weight:500">${c.client}</td><td style="color:var(--muted)">${c.type}</td><td><span style="color:${USERS[c.analyst==='Founder'?'founder':'cofounder'].color};font-weight:600">${c.analyst}</span></td><td><span class="verdict-pill ${c.verdict==='MANIPULATED'?'vp-m':c.verdict==='AUTHENTIC'?'vp-a':'vp-i'}">${c.verdict}</span></td><td><div class="score-bar-wrap"><div class="score-bar-track"><div class="score-bar-fill" style="width:${c.score}%;background:${c.score>75?'var(--danger)':c.score>40?'var(--warn)':'var(--success)'}"></div></div><span class="score-num">${c.score}</span></div></td><td><span class="tag ${c.urgency==='Rush'?'urgent':c.urgency==='Elevated'?'elevated':'standard'}">${c.urgency}</span></td><td><span class="tag ${c.status==='Complete'?'standard':'elevated'}">${c.status}</span></td></tr>`).join('')}</tbody>`;
 }
+function filterCases(v){if(v==='all')renderAllCases(cases);else if(v==='In Progress'||v==='Complete')renderAllCases(cases.filter(c=>c.status===v));else renderAllCases(cases.filter(c=>c.analyst===v));}
 
-function filterCases(val){
-  if(val==='all')renderAllCases(cases);
-  else if(val==='In Progress'||val==='Complete')renderAllCases(cases.filter(c=>c.status===val));
-  else renderAllCases(cases.filter(c=>c.analyst===val));
-}
-
-// ══════════════════════════════════════
-// REPORTS
-// ══════════════════════════════════════
 function renderReports(){
-  const completed=cases.filter(c=>c.status==='Complete');
-  const t=document.getElementById('reports-table');
-  if(!completed.length){t.innerHTML='<tbody><tr><td colspan="5" class="empty-state"><div class="empty-icon">📄</div><div>No reports yet.</div></td></tr></tbody>';return;}
-  t.innerHTML=`<thead><tr><th>Case ID</th><th>Client</th><th>Verdict</th><th>Analyst</th><th>Date</th><th>Action</th></tr></thead>
-  <tbody>${completed.map(c=>`<tr>
-    <td style="color:var(--amber);font-family:monospace;font-size:11px">${c.id}</td>
-    <td>${c.client}</td>
-    <td><span class="verdict-pill ${c.verdict==='MANIPULATED'?'vp-m':c.verdict==='AUTHENTIC'?'vp-a':'vp-i'}">${c.verdict}</span></td>
-    <td><span style="color:${USERS[c.analyst==='Founder'?'founder':'cofounder'].color};font-weight:600">${c.analyst}</span></td>
-    <td style="color:var(--muted)">${c.date}</td>
-    <td><button class="action-link" onclick="alert('Report ${c.id} — PDF generation requires backend integration.')">📄 Download</button></td>
-  </tr>`).join('')}</tbody>`;
+  const cp=cases.filter(c=>c.status==='Complete'),t=document.getElementById('reports-table');
+  if(!cp.length){t.innerHTML='<tbody><tr><td colspan="6" class="empty-state"><div class="empty-icon">📄</div>No reports yet.</td></tr></tbody>';return;}
+  t.innerHTML=`<thead><tr><th>Case ID</th><th>Client</th><th>Verdict</th><th>Analyst</th><th>Date</th><th>Action</th></tr></thead><tbody>${cp.map(c=>`<tr><td style="color:var(--amber);font-family:monospace;font-size:11px">${c.id}</td><td>${c.client}</td><td><span class="verdict-pill ${c.verdict==='MANIPULATED'?'vp-m':c.verdict==='AUTHENTIC'?'vp-a':'vp-i'}">${c.verdict}</span></td><td><span style="color:${USERS[c.analyst==='Founder'?'founder':'cofounder'].color};font-weight:600">${c.analyst}</span></td><td style="color:var(--muted)">${c.date}</td><td><button class="action-link" onclick="alert('Report ${c.id} — PDF generation requires backend integration.')">📄 Download</button></td></tr>`).join('')}</tbody>`;
 }
 
-// ══════════════════════════════════════
-// CLIENTS
-// ══════════════════════════════════════
 function renderClients(){
-  const g=document.getElementById('clients-grid');
-  g.innerHTML=clients.map(c=>{
-    const cc=cases.filter(cs=>cs.client===c.name);
-    return`<div class="client-card">
-      <div class="client-name">${c.name}</div>
-      <div class="client-meta">${c.type} · ${c.contact}</div>
-      <div class="client-stats">
-        <div class="cs-item"><span class="cs-val">${cc.length}</span>Cases</div>
-        <div class="cs-item"><span class="cs-val">${cc.filter(x=>x.status==='Complete').length}</span>Complete</div>
-        <div class="cs-item"><span class="cs-val">${cc.filter(x=>x.verdict==='MANIPULATED').length}</span>Flagged</div>
-      </div>
-    </div>`;
-  }).join('');
+  document.getElementById('clients-grid').innerHTML=clients.map(c=>{const cc=cases.filter(cs=>cs.client===c.name);return`<div class="client-card"><div class="client-name">${c.name}</div><div class="client-meta">${c.type} · ${c.contact}</div><div class="client-stats"><div class="cs-item"><span class="cs-val">${cc.length}</span>Cases</div><div class="cs-item"><span class="cs-val">${cc.filter(x=>x.status==='Complete').length}</span>Done</div><div class="cs-item"><span class="cs-val">${cc.filter(x=>x.verdict==='MANIPULATED').length}</span>Flagged</div></div></div>`;}).join('');
 }
-
 function addClient(){
-  const name=document.getElementById('new-client-name').value.trim();
-  if(!name)return;
-  clients.push({name,contact:document.getElementById('new-client-contact').value,type:document.getElementById('new-client-type').value,email:document.getElementById('new-client-email').value});
-  logActivity('Added new client: '+name);
-  document.getElementById('add-client-modal').classList.remove('show');
-  renderClients();
-  document.getElementById('new-client-name').value='';
-  document.getElementById('new-client-contact').value='';
-  document.getElementById('new-client-email').value='';
+  const n=document.getElementById('new-client-name').value.trim();if(!n)return;
+  clients.push({name:n,contact:document.getElementById('new-client-contact').value,type:document.getElementById('new-client-type').value});
+  logActivity('Added client: '+n);document.getElementById('add-client-modal').classList.remove('show');renderClients();renderActivityLog();
+  document.getElementById('new-client-name').value='';document.getElementById('new-client-contact').value='';
 }
 
-// ══════════════════════════════════════
-// ACTIVITY LOG
-// ══════════════════════════════════════
-function logActivity(action){
-  const now=new Date();
-  activityLog.push({user:currentUser.name,action,time:'Jun '+now.getDate()+' · '+now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes()});
-}
+function logActivity(a){const n=new Date();activityLog.push({user:currentUser.name,action:a,time:'Jun '+n.getDate()+' · '+n.getHours()+':'+(n.getMinutes()<10?'0':'')+n.getMinutes()});}
+function renderActivityLog(){document.getElementById('activity-log-table').innerHTML=`<thead><tr><th>Analyst</th><th>Action</th><th>Time</th></tr></thead><tbody>${activityLog.slice().reverse().map(a=>`<tr><td><div class="analyst-tag"><div class="analyst-dot" style="background:${USERS[a.user==='Founder'?'founder':'cofounder'].color}"></div><span style="font-weight:600;color:var(--body)">${a.user}</span></div></td><td>${a.action}</td><td style="color:var(--muted);font-size:11px">${a.time}</td></tr>`).join('')}</tbody>`;}
 
-function renderActivityLog(){
-  const t=document.getElementById('activity-log-table');
-  t.innerHTML=`<thead><tr><th>Analyst</th><th>Action</th><th>Time</th></tr></thead>
-  <tbody>${activityLog.slice().reverse().map(a=>`<tr>
-    <td><div class="analyst-tag"><div class="analyst-dot" style="background:${USERS[a.user==='Founder'?'founder':'cofounder'].color}"></div><span style="font-weight:600;color:#fff">${a.user}</span></div></td>
-    <td>${a.action}</td>
-    <td style="color:var(--muted);font-size:11px">${a.time}</td>
-  </tr>`).join('')}</tbody>`;
-}
+function renderChart(){const m=[{l:'Jan',v:0},{l:'Feb',v:0},{l:'Mar',v:0},{l:'Apr',v:1},{l:'May',v:2},{l:'Jun',v:6}];document.getElementById('chart-bars').innerHTML=m.map(x=>`<div class="bar-col"><div class="bar-val-lbl">${x.v||''}</div><div class="bar-visual" style="height:${x.v?Math.max((x.v/6)*130,8):4}px;opacity:${x.v?0.85:0.2}"></div><div class="bar-lbl">${x.l}</div></div>`).join('');}
 
-// ══════════════════════════════════════
-// ANALYTICS CHART
-// ══════════════════════════════════════
-function renderAnalyticsChart(){
-  const months=[{l:'Jan',v:0},{l:'Feb',v:0},{l:'Mar',v:0},{l:'Apr',v:1},{l:'May',v:2},{l:'Jun',v:6}];
-  const max=6;
-  document.getElementById('chart-bars').innerHTML=months.map(m=>`
-    <div class="bar-col">
-      <div class="bar-val-lbl">${m.v||''}</div>
-      <div class="bar-visual" style="height:${m.v?Math.max((m.v/max)*130,8):4}px;opacity:${m.v?0.85:0.2}"></div>
-      <div class="bar-lbl">${m.l}</div>
-    </div>`).join('');
-}
-
-// ══════════════════════════════════════
-// NEW CASE — FILE + SCAN
-// ══════════════════════════════════════
+// ── NEW CASE ──
 function getIcon(n){if(!n)return'📁';const e=n.split('.').pop().toLowerCase();if(['mp4','mov','avi','webm'].includes(e))return'🎬';if(['mp3','wav','aac'].includes(e))return'🎵';return'🖼️';}
 function fmtSize(b){if(b>1e9)return(b/1e9).toFixed(1)+' GB';if(b>1e6)return(b/1e6).toFixed(1)+' MB';return(b/1e3).toFixed(0)+' KB';}
 function fakeHash(){let h='';const c='abcdef0123456789';for(let i=0;i<40;i++)h+=c[Math.floor(Math.random()*16)];return h;}
-
 function ncDrag(e){e.preventDefault();document.getElementById('nc-drop').classList.add('drag');}
 function ncDragLeave(){document.getElementById('nc-drop').classList.remove('drag');}
 function ncDrop(e){e.preventDefault();ncDragLeave();const f=e.dataTransfer.files[0];if(f)ncHandleFile(f);}
-
 function ncHandleFile(file){
   if(!file)return;
   document.getElementById('nc-drop').style.display='none';
-  const fi=document.getElementById('nc-file-info');fi.classList.add('show');
+  document.getElementById('nc-file-info').classList.add('show');
   document.getElementById('nc-fi-icon').textContent=getIcon(file.name);
   document.getElementById('nc-fi-name').textContent=file.name;
   document.getElementById('nc-fi-meta').textContent=fmtSize(file.size)+' · Received '+new Date().toISOString().replace('T',' ').slice(0,19)+' UTC';
   document.getElementById('nc-fi-hash').textContent='SHA-256: '+fakeHash();
   setTimeout(()=>startScan(),600);
 }
-
-const TOOL_RESULTS=[
-  {name:'Hive Moderation API',type:'AI-Generated Content · Video & Image',score:89,verdict:'MANIPULATED',cls:'flagged',fill:'fill-r',desc:'GAN artefacts detected across 2,847 frames. Facial boundary interpolation inconsistencies. Synthetic face flagged at 94.3% model confidence.'},
-  {name:'Sensity AI',type:'Deepfake Video · Face Manipulation',score:81,verdict:'MANIPULATED',cls:'flagged',fill:'fill-r',desc:'Identity verification failed against 3 reference recordings. Eigenface distance 1.42 (threshold: 0.85). 47 scene cuts with micro-blending artefacts.'},
-  {name:'Intel FakeCatcher',type:'Biological Signal · Blood Flow',score:76,verdict:'MANIPULATED',cls:'flagged',fill:'fill-w',desc:'rPPG blood flow signal absent across 87% of frames. Blink rate anomaly: 0.31Hz vs expected 0.25–0.40Hz. Synthetic facial rendering indicated.'},
-  {name:'Resemble Detect',type:'Audio Deepfake · Voice Clone',score:94,verdict:'MANIPULATED',cls:'flagged',fill:'fill-r',desc:'Formant frequencies F1–F3 deviate 12–18% from reference. MFCC cosine similarity 0.61 vs threshold >0.85. Sync drift 84ms at 07:33.'},
-  {name:'Microsoft Video Authenticator',type:'Frame-Level · Pixel Forensics',score:71,verdict:'MANIPULATED',cls:'flagged',fill:'fill-a',desc:'ELA flagged 6 distinct segments. Shadow direction inconsistency at 00:12:01–00:12:08. Compression artefact anomaly at scene boundaries.'},
+const TR=[
+  {name:'Hive Moderation API',type:'AI-Generated Content',score:89,fill:'fill-r',desc:'GAN artefacts across 2,847 frames. Synthetic face flagged at 94.3% confidence.'},
+  {name:'Sensity AI',type:'Deepfake Video',score:81,fill:'fill-r',desc:'Identity verification failed. Eigenface distance 1.42 (threshold 0.85).'},
+  {name:'Intel FakeCatcher',type:'Biological Signal',score:76,fill:'fill-w',desc:'rPPG blood flow absent across 87% of frames. Blink anomaly detected.'},
+  {name:'Resemble Detect',type:'Voice Clone',score:94,fill:'fill-r',desc:'Formants deviate 12–18%. MFCC similarity 0.61. Sync drift 84ms.'},
+  {name:'Microsoft Video Authenticator',type:'Pixel Forensics',score:71,fill:'fill-a',desc:'ELA flagged 6 segments. Shadow inconsistency at 00:12:01.'},
 ];
-
-const ANOM=[
-  {sev:'Critical',cls:'ap-c',time:'00:04:17',name:'Face-swap boundary artefact',desc:'Pixel-level interpolation inconsistency at facial boundary. Texture gradient discontinuity 4.2σ above baseline.',tool:'Hive Moderation API v3.2.1 · Frames #6,201–#6,280'},
-  {sev:'Critical',cls:'ap-c',time:'00:04:17',name:'Biological signal absent — rPPG',desc:'No cardiac-cycle-linked blood flow signal detected. Absence indicates synthetic facial rendering.',tool:'Intel FakeCatcher v1.4.0 · Biological Signal Module'},
-  {sev:'Critical',cls:'ap-c',time:'00:07:33',name:'Audio-visual synchronisation drift',desc:'Audio leads video by 84ms through 07:33–09:12. Consistent with voice track replacement in post-production.',tool:'Resemble Detect v1.1.3 · Sync Analysis Module'},
-  {sev:'Critical',cls:'ap-c',time:'00:07:33',name:'Voice spectral fingerprint mismatch',desc:'MFCC cosine similarity: 0.61 vs threshold >0.85. Audio assessed as AI-synthesised voice clone.',tool:'Resemble Detect v1.1.3 · Voice Fingerprint Engine'},
-  {sev:'Warning',cls:'ap-w',time:'00:12:01',name:'Lighting direction inconsistency',desc:'Background illumination ~220° azimuth vs facial lighting ~160°. Delta of ~60° inconsistent with natural single-source lighting.',tool:'MS Video Authenticator v2.0 · Illumination Analysis'},
+const AN=[
+  {sev:'Critical',cls:'ap-c',time:'00:04:17',name:'Face-swap boundary artefact',desc:'Texture gradient discontinuity 4.2σ above baseline.',tool:'Hive Moderation API v3.2.1 · Frames #6,201–#6,280'},
+  {sev:'Critical',cls:'ap-c',time:'00:04:17',name:'Biological signal absent — rPPG',desc:'No cardiac-cycle blood flow signal. Indicates synthetic rendering.',tool:'Intel FakeCatcher v1.4.0'},
+  {sev:'Critical',cls:'ap-c',time:'00:07:33',name:'Audio-visual sync drift',desc:'Audio leads video by 84ms. Consistent with voice replacement.',tool:'Resemble Detect v1.1.3'},
+  {sev:'Critical',cls:'ap-c',time:'00:07:33',name:'Voice spectral mismatch',desc:'MFCC similarity 0.61 vs threshold 0.85. AI-synthesised voice.',tool:'Resemble Detect v1.1.3'},
+  {sev:'Warning',cls:'ap-w',time:'00:12:01',name:'Lighting inconsistency',desc:'Background ~220° vs facial ~160°. Possible composite.',tool:'MS Video Authenticator v2.0'},
 ];
-
 function startScan(){
-  const scan=document.getElementById('nc-scan');scan.classList.add('show');
-  const tools=[{id:'ts-hive',d:500},{id:'ts-sensity',d:1200},{id:'ts-fake',d:2000},{id:'ts-resemble',d:2800},{id:'ts-ms',d:3600}];
-  const pcts=[20,40,60,80,100];
+  document.getElementById('nc-scan').classList.add('show');
+  const tools=[{id:'ts-hive',d:500},{id:'ts-sensity',d:1200},{id:'ts-fake',d:2000},{id:'ts-resemble',d:2800},{id:'ts-ms',d:3600}],pcts=[20,40,60,80,100];
   tools.forEach((t,i)=>{
     setTimeout(()=>{const el=document.getElementById(t.id);el.textContent='Running...';el.className='tool-status ts-run';},t.d);
     setTimeout(()=>{const el=document.getElementById(t.id);el.textContent='✓ Complete';el.className='tool-status ts-done';document.getElementById('nc-prog').style.width=pcts[i]+'%';document.getElementById('nc-pct').textContent=pcts[i]+'%';},t.d+600);
   });
-  setTimeout(()=>{
-    document.getElementById('ts-human').textContent='⏳ Pending analyst sign-off';
-    scan.classList.remove('show');
-    showResults();
-  },4800);
+  setTimeout(()=>{document.getElementById('ts-human').textContent='⏳ Pending analyst sign-off';document.getElementById('nc-scan').classList.remove('show');showResults();},4800);
 }
-
 function showResults(){
-  const rp=document.getElementById('nc-results');rp.classList.add('show');
+  document.getElementById('nc-results').classList.add('show');
   document.getElementById('nc-analyst-display').textContent=currentUser.name;
   document.getElementById('nc-time-display').textContent=new Date().toISOString().replace('T',' ').slice(0,19)+' UTC';
-  // Tools grid
-  document.getElementById('nc-tools-grid').innerHTML=TOOL_RESULTS.map((t,i)=>`
-    <div class="tool-card ${t.cls}" ${i===4?'style="grid-column:1/-1"':''}>
-      <div class="tc-header"><div><div class="tc-name">${t.name}</div><div class="tc-type">${t.type}</div></div><span class="tc-badge tb-m">${t.verdict}</span></div>
-      <div class="tc-bar-row"><span>Confidence</span><span class="tc-bar-val">${t.score} / 100</span></div>
-      <div class="tc-track"><div class="tc-fill ${t.fill}" style="width:${t.score}%"></div></div>
-      <div class="tc-desc">${t.desc}</div>
-    </div>`).join('');
-  // Anomalies
-  document.getElementById('nc-anom-count').textContent=ANOM.length+' findings · 4 Critical · 1 Warning';
-  document.getElementById('nc-anom-body').innerHTML=ANOM.map(a=>`
-    <div class="anom-item">
-      <div class="anom-sev-wrap"><span class="ap ${a.cls}">${a.sev}</span><div class="anom-ts">${a.time}</div></div>
-      <div><div class="anom-body-name">${a.name}</div><div class="anom-body-desc">${a.desc}</div><div class="anom-body-tool">${a.tool}</div></div>
-    </div>`).join('');
+  document.getElementById('nc-tools-grid').innerHTML=TR.map((t,i)=>`<div class="tool-card flagged" ${i===4?'style="grid-column:1/-1"':''}><div class="tc-header"><div><div class="tc-name">${t.name}</div><div class="tc-type">${t.type}</div></div><span class="tc-badge tb-m">FLAGGED</span></div><div class="tc-bar-row"><span>Confidence</span><span class="tc-bar-val">${t.score} / 100</span></div><div class="tc-track"><div class="tc-fill ${t.fill}" style="width:${t.score}%"></div></div><div class="tc-desc">${t.desc}</div></div>`).join('');
+  document.getElementById('nc-anom-body').innerHTML=AN.map(a=>`<div class="anom-item"><div class="anom-sev-wrap"><span class="ap ${a.cls}">${a.sev}</span><div class="anom-ts">${a.time}</div></div><div><div class="anom-body-name">${a.name}</div><div class="anom-body-desc">${a.desc}</div><div class="anom-body-tool">${a.tool}</div></div></div>`).join('');
 }
-
-function generateReport(){
-  const client=document.getElementById('nc-client').value||'Unknown Client';
-  const ref=document.getElementById('nc-ref').value;
-  alert('Report '+ref+' for '+client+'\nAnalyst: '+currentUser.name+'\n\nPDF generation will be live once the backend API is connected.\nThis report will be signed by: '+currentUser.name+' ('+currentUser.role+')');
-  logActivity('Generated report '+ref+' for '+client);
-  renderActivityLog();
-}
-
-function saveCase(){
-  const client=document.getElementById('nc-client').value||'Unknown Client';
-  const ref=document.getElementById('nc-ref').value;
-  const urg=document.getElementById('nc-urgency').value.split(' — ')[0];
-  cases.push({id:ref,client,type:document.getElementById('nc-type').value,verdict:'MANIPULATED',score:82,status:'Complete',analyst:currentUser.name,date:'Jun '+new Date().getDate()+' 2026',urgency:urg,notes:document.getElementById('nc-notes').value});
-  logActivity('Saved case '+ref+' — '+client);
-  document.getElementById('badge-cases').textContent=cases.length;
-  renderDashboard();
-  renderActivityLog();
-  refreshCaseRef();
-  alert('Case '+ref+' saved successfully.');
-}
-
+function generateReport(){const c=document.getElementById('nc-client').value||'Unknown Client',r=document.getElementById('nc-ref').value;alert('Report '+r+' for '+c+'\nSigned by: '+currentUser.name+' ('+currentUser.role+')\n\nPDF generation goes live once the backend API is connected.');logActivity('Generated report '+r+' for '+c);renderActivityLog();}
+function saveCase(){const c=document.getElementById('nc-client').value||'Unknown Client',r=document.getElementById('nc-ref').value,u=document.getElementById('nc-urgency').value.split(' — ')[0];cases.push({id:r,client:c,type:document.getElementById('nc-type').value,verdict:'MANIPULATED',score:82,status:'Complete',analyst:currentUser.name,date:'Jun '+new Date().getDate()+' 2026',urgency:u});logActivity('Saved case '+r+' — '+c);document.getElementById('badge-cases').textContent=cases.length;renderDashboard();renderActivityLog();refreshCaseRef();alert('Case '+r+' saved.');}
 function resetNewCase(){
   document.getElementById('nc-drop').style.display='block';
   document.getElementById('nc-file-info').classList.remove('show');
   document.getElementById('nc-scan').classList.remove('show');
   document.getElementById('nc-results').classList.remove('show');
-  document.getElementById('nc-prog').style.width='0%';
-  document.getElementById('nc-pct').textContent='0%';
+  document.getElementById('nc-prog').style.width='0%';document.getElementById('nc-pct').textContent='0%';
   ['ts-hive','ts-sensity','ts-fake','ts-resemble','ts-ms'].forEach(id=>{const el=document.getElementById(id);el.textContent='Waiting...';el.className='tool-status ts-wait';});
   document.getElementById('ts-human').textContent='Queued after automated analysis';
-  document.getElementById('nc-file').value='';
-  document.getElementById('nc-client').value='';
-  document.getElementById('nc-notes').value='';
+  document.getElementById('nc-file').value='';document.getElementById('nc-client').value='';document.getElementById('nc-notes').value='';
   refreshCaseRef();
 }
 </script>
