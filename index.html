@@ -721,6 +721,25 @@ function initApp(){
   refreshAvatars();
   refreshCaseRef();
   renderDashboard();renderAllCases(cases);renderReports();renderClients();renderActivityLog();renderChart();
+  loadData();
+}
+
+// ── DATA (Supabase) ── the database is the source of truth; local arrays are a cache
+async function loadData(){
+  try{
+    const [cRes,clRes,aRes]=await Promise.all([
+      sb.from('cases').select('*').order('created_at',{ascending:true}),
+      sb.from('clients').select('*').order('created_at',{ascending:true}),
+      sb.from('activity_log').select('*').order('created_at',{ascending:true})
+    ]);
+    if(cRes.error||clRes.error||aRes.error){console.error('loadData error',cRes.error||clRes.error||aRes.error);return;}
+    if(cRes.data)cases=cRes.data.map(r=>({id:r.case_ref,client:r.client,type:r.type,verdict:r.verdict,score:r.score,status:r.status,analyst:r.analyst,date:r.date,urgency:r.urgency}));
+    if(clRes.data)clients=clRes.data.map(r=>({name:r.name,contact:r.contact,type:r.type}));
+    if(aRes.data)activityLog=aRes.data.map(r=>({user:r.user_name,action:r.action,time:r.time}));
+    document.getElementById('badge-cases').textContent=cases.length;
+    refreshCaseRef();
+    renderDashboard();renderAllCases(cases);renderReports();renderClients();renderActivityLog();renderChart();
+  }catch(e){console.error('loadData failed',e);}
 }
 function refreshCaseRef(){document.getElementById('nc-ref').value='RVL-202606-'+(1007+cases.length);}
 
@@ -759,14 +778,17 @@ function renderReports(){
 function renderClients(){
   document.getElementById('clients-grid').innerHTML=clients.map(c=>{const cc=cases.filter(cs=>cs.client===c.name);return`<div class="client-card"><div class="client-name">${c.name}</div><div class="client-meta">${c.type} · ${c.contact}</div><div class="client-stats"><div class="cs-item"><span class="cs-val">${cc.length}</span>Cases</div><div class="cs-item"><span class="cs-val">${cc.filter(x=>x.status==='Complete').length}</span>Done</div><div class="cs-item"><span class="cs-val">${cc.filter(x=>x.verdict==='MANIPULATED').length}</span>Flagged</div></div></div>`;}).join('');
 }
-function addClient(){
+async function addClient(){
   const n=document.getElementById('new-client-name').value.trim();if(!n)return;
-  clients.push({name:n,contact:document.getElementById('new-client-contact').value,type:document.getElementById('new-client-type').value});
-  logActivity('Added client: '+n);document.getElementById('add-client-modal').classList.remove('show');renderClients();renderActivityLog();
+  const contact=document.getElementById('new-client-contact').value,type=document.getElementById('new-client-type').value;
+  const {error}=await sb.from('clients').insert({name:n,contact,type});
+  if(error){alert('Could not save client: '+error.message);return;}
+  clients.push({name:n,contact,type});
+  logActivity('Added client: '+n);document.getElementById('add-client-modal').classList.remove('show');renderClients();renderActivityLog();renderDashboard();
   document.getElementById('new-client-name').value='';document.getElementById('new-client-contact').value='';
 }
 
-function logActivity(a){const n=new Date();activityLog.push({user:currentUser.name,action:a,time:'Jun '+n.getDate()+' · '+n.getHours()+':'+(n.getMinutes()<10?'0':'')+n.getMinutes()});}
+function logActivity(a){const n=new Date();const time='Jun '+n.getDate()+' · '+n.getHours()+':'+(n.getMinutes()<10?'0':'')+n.getMinutes();const uname=currentUser.name;activityLog.push({user:uname,action:a,time});sb.from('activity_log').insert({user_name:uname,action:a,time}).then(({error})=>{if(error)console.error('activity insert failed',error);});}
 function renderActivityLog(){document.getElementById('activity-log-table').innerHTML=`<thead><tr><th>Analyst</th><th>Action</th><th>Time</th></tr></thead><tbody>${activityLog.slice().reverse().map(a=>`<tr><td><div class="analyst-tag"><div class="analyst-dot" style="background:${USERS[a.user==='Founder'?'founder':'cofounder'].color}"></div><span style="font-weight:600;color:var(--body)">${a.user}</span></div></td><td>${a.action}</td><td style="color:var(--muted);font-size:11px">${a.time}</td></tr>`).join('')}</tbody>`;}
 
 function renderChart(){const m=[{l:'Jan',v:0},{l:'Feb',v:0},{l:'Mar',v:0},{l:'Apr',v:1},{l:'May',v:2},{l:'Jun',v:6}];document.getElementById('chart-bars').innerHTML=m.map(x=>`<div class="bar-col"><div class="bar-val-lbl">${x.v||''}</div><div class="bar-visual" style="height:${x.v?Math.max((x.v/6)*130,8):4}px;opacity:${x.v?0.85:0.2}"></div><div class="bar-lbl">${x.l}</div></div>`).join('');}
@@ -778,14 +800,32 @@ function fakeHash(){let h='';const c='abcdef0123456789';for(let i=0;i<40;i++)h+=
 function ncDrag(e){e.preventDefault();document.getElementById('nc-drop').classList.add('drag');}
 function ncDragLeave(){document.getElementById('nc-drop').classList.remove('drag');}
 function ncDrop(e){e.preventDefault();ncDragLeave();const f=e.dataTransfer.files[0];if(f)ncHandleFile(f);}
-function ncHandleFile(file){
+let currentUpload=null;
+async function ncHandleFile(file){
   if(!file)return;
+  currentUpload=null;
   document.getElementById('nc-drop').style.display='none';
   document.getElementById('nc-file-info').classList.add('show');
   document.getElementById('nc-fi-icon').textContent=getIcon(file.name);
   document.getElementById('nc-fi-name').textContent=file.name;
-  document.getElementById('nc-fi-meta').textContent=fmtSize(file.size)+' · Received '+new Date().toISOString().replace('T',' ').slice(0,19)+' UTC';
-  document.getElementById('nc-fi-hash').textContent='SHA-256: '+fakeHash();
+  const recv=new Date().toISOString().replace('T',' ').slice(0,19)+' UTC';
+  document.getElementById('nc-fi-meta').textContent=fmtSize(file.size)+' · Received '+recv;
+  document.getElementById('nc-fi-hash').textContent='SHA-256: computing…';
+  // Real SHA-256 via Web Crypto (https only)
+  let hashHex='(hash unavailable)';
+  try{
+    const buf=await file.arrayBuffer();
+    const digest=await crypto.subtle.digest('SHA-256',buf);
+    hashHex=Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }catch(e){console.error('hash failed',e);}
+  document.getElementById('nc-fi-hash').textContent='SHA-256: '+hashHex;
+  // Upload to the private Supabase Storage bucket
+  const ref=document.getElementById('nc-ref').value||'unfiled';
+  const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+  const path=ref+'/'+Date.now()+'_'+safe;
+  const {data,error}=await sb.storage.from('case-files').upload(path,file,{upsert:false});
+  if(error){console.error('upload failed',error);document.getElementById('nc-fi-meta').textContent=fmtSize(file.size)+' · Received '+recv+' · ⚠ upload failed: '+error.message;}
+  else{currentUpload={path:data.path,hash:hashHex};}
   setTimeout(()=>startScan(),600);
 }
 const TR=[
@@ -819,8 +859,9 @@ function showResults(){
   document.getElementById('nc-anom-body').innerHTML=AN.map(a=>`<div class="anom-item"><div class="anom-sev-wrap"><span class="ap ${a.cls}">${a.sev}</span><div class="anom-ts">${a.time}</div></div><div><div class="anom-body-name">${a.name}</div><div class="anom-body-desc">${a.desc}</div><div class="anom-body-tool">${a.tool}</div></div></div>`).join('');
 }
 function generateReport(){const c=document.getElementById('nc-client').value||'Unknown Client',r=document.getElementById('nc-ref').value;alert('Report '+r+' for '+c+'\nSigned by: '+currentUser.name+' ('+currentUser.role+')\n\nPDF generation goes live once the backend API is connected.');logActivity('Generated report '+r+' for '+c);renderActivityLog();}
-function saveCase(){const c=document.getElementById('nc-client').value||'Unknown Client',r=document.getElementById('nc-ref').value,u=document.getElementById('nc-urgency').value.split(' — ')[0];cases.push({id:r,client:c,type:document.getElementById('nc-type').value,verdict:'MANIPULATED',score:82,status:'Complete',analyst:currentUser.name,date:'Jun '+new Date().getDate()+' 2026',urgency:u});logActivity('Saved case '+r+' — '+c);document.getElementById('badge-cases').textContent=cases.length;renderDashboard();renderActivityLog();refreshCaseRef();alert('Case '+r+' saved.');}
+async function saveCase(){const c=document.getElementById('nc-client').value||'Unknown Client',r=document.getElementById('nc-ref').value,u=document.getElementById('nc-urgency').value.split(' — ')[0],type=document.getElementById('nc-type').value,date='Jun '+new Date().getDate()+' 2026';const {error}=await sb.from('cases').insert({case_ref:r,client:c,type,verdict:'MANIPULATED',score:82,status:'Complete',analyst:currentUser.name,urgency:u,date,file_path:currentUpload?currentUpload.path:null,file_hash:currentUpload?currentUpload.hash:null});if(error){alert('Could not save case: '+error.message);return;}cases.push({id:r,client:c,type,verdict:'MANIPULATED',score:82,status:'Complete',analyst:currentUser.name,date,urgency:u});logActivity('Saved case '+r+' — '+c);document.getElementById('badge-cases').textContent=cases.length;renderDashboard();renderActivityLog();refreshCaseRef();alert('Case '+r+' saved to database.');}
 function resetNewCase(){
+  currentUpload=null;
   document.getElementById('nc-drop').style.display='block';
   document.getElementById('nc-file-info').classList.remove('show');
   document.getElementById('nc-scan').classList.remove('show');
