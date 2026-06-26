@@ -3,6 +3,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@500,600,700,800,900&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 /* DARK MODE (default) */
@@ -509,8 +510,28 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
 
       <!-- REPORTS -->
       <div class="page" id="page-reports">
-        <div class="page-header"><div><div class="page-title">Reports</div><div class="page-sub">Signed verification reports ready for delivery.</div></div></div>
-        <div class="card"><div class="card-header"><div class="card-title">Report Archive</div></div><div style="padding:0"><table class="activity-table" id="reports-table"></table></div></div>
+        <div class="page-header">
+          <div><div class="page-title">Reports</div><div class="page-sub">Generate and download signed verification reports for completed cases.</div></div>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">
+            <div class="card-title">Client Logo (Optional)</div>
+            <span style="font-size:11px;color:var(--muted)">Appears on the report alongside Revlar branding</span>
+          </div>
+          <div class="card-body" style="display:flex;align-items:center;gap:16px">
+            <div id="rpt-logo-preview" style="width:80px;height:48px;background:var(--card);border:1px dashed var(--border);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);overflow:hidden;flex-shrink:0">No logo</div>
+            <div>
+              <button class="btn btn-secondary" style="font-size:11px" onclick="document.getElementById(&apos;rpt-logo-input&apos;).click()">📎 Upload Logo</button>
+              <button class="btn btn-secondary" id="rpt-logo-clear" onclick="clearReportLogo()" style="font-size:11px;margin-left:8px;display:none">✕ Remove</button>
+              <div style="font-size:11px;color:var(--muted);margin-top:6px">PNG or JPG · Scaled to fit the report header</div>
+            </div>
+            <input type="file" id="rpt-logo-input" accept="image/*" style="display:none" onchange="handleReportLogo(this.files[0])"/>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Completed Cases — Ready for Report</div></div>
+          <div style="padding:0"><table class="activity-table" id="reports-table"></table></div>
+        </div>
       </div>
 
       <!-- CASE DETAIL -->
@@ -601,7 +622,7 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
           </div>
         </div>
         <div style="display:flex;gap:10px;margin-bottom:24px">
-          <button class="btn btn-primary" onclick="alert('Report PDF — coming in the next build.')">📄 Generate Report</button>
+          <button class="btn btn-primary" onclick="generateReport(currentCaseId)">📄 Generate Report</button>
           <button class="btn btn-secondary" onclick="closeCaseDetail()">← Back to Cases</button>
         </div>
       </div>
@@ -913,8 +934,285 @@ function filterCases(v){if(v==='all')renderAllCases(cases);else if(v==='In Progr
 
 function renderReports(){
   const cp=cases.filter(c=>c.status==='Complete'),t=document.getElementById('reports-table');
-  if(!cp.length){t.innerHTML='<tbody><tr><td colspan="6" class="empty-state"><div class="empty-icon">📄</div>No reports yet.</td></tr></tbody>';return;}
-  t.innerHTML=`<thead><tr><th>Case ID</th><th>Client</th><th>Verdict</th><th>Analyst</th><th>Date</th><th>Action</th></tr></thead><tbody>${cp.map(c=>`<tr><td style="color:var(--amber);font-family:monospace;font-size:11px">${c.id}</td><td>${c.client}</td><td><span class="verdict-pill ${c.verdict==='MANIPULATED'?'vp-m':c.verdict==='AUTHENTIC'?'vp-a':'vp-i'}">${c.verdict}</span></td><td><span style="color:${USERS[c.analyst==='Founder'?'founder':'cofounder'].color};font-weight:600">${c.analyst}</span></td><td style="color:var(--muted)">${c.date}</td><td><button class="action-link" onclick="alert('Report ${c.id} — PDF generation requires backend integration.')">📄 Download</button></td></tr>`).join('')}</tbody>`;
+  if(!cp.length){t.innerHTML='<tbody><tr><td colspan="6" class="empty-state"><div class="empty-icon">📄</div>No completed cases yet.</td></tr></tbody>';return;}
+  t.innerHTML=`<thead><tr><th>Case ID</th><th>Client</th><th>Type</th><th>Verdict</th><th>Analyst</th><th>Date</th><th>Action</th></tr></thead><tbody>${cp.map(c=>`<tr><td style="color:var(--amber);font-family:monospace;font-size:11px">${c.id}</td><td style="font-weight:500">${c.client}</td><td style="color:var(--muted)">${c.type}</td><td><span class="verdict-pill ${c.verdict==='MANIPULATED'?'vp-m':c.verdict==='AUTHENTIC'?'vp-a':'vp-i'}">${c.verdict}</span></td><td><span style="color:${USERS[c.analyst==='Founder'?'founder':'cofounder'].color};font-weight:600">${c.analyst}</span></td><td style="color:var(--muted)">${c.date}</td><td><button class="btn btn-primary" style="font-size:11px;padding:6px 12px" onclick="generateReport('${c.id}')">📄 Generate Report</button></td></tr>`).join('')}</tbody>`;
+}
+
+// ── REPORT LOGO STATE ──
+let reportLogoDataUrl = null;
+function handleReportLogo(file){
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    reportLogoDataUrl=e.target.result;
+    const prev=document.getElementById('rpt-logo-preview');
+    prev.innerHTML='<img src="'+e.target.result+'" style="max-width:100%;max-height:100%;object-fit:contain"/>';
+    document.getElementById('rpt-logo-clear').style.display='inline-flex';
+  };
+  reader.readAsDataURL(file);
+}
+function clearReportLogo(){
+  reportLogoDataUrl=null;
+  const prev=document.getElementById('rpt-logo-preview');
+  prev.innerHTML='No logo';
+  document.getElementById('rpt-logo-clear').style.display='none';
+  document.getElementById('rpt-logo-input').value='';
+}
+
+// ── GENERATE REPORT PDF ──
+async function generateReport(caseId){
+  const c=cases.find(x=>x.id===caseId);
+  if(!c){alert('Case not found.');return;}
+
+  // Fetch latest notes from DB
+  let notes=c.notes||'';
+  try{
+    const {data}=await sb.from('cases').select('notes').eq('case_ref',caseId).single();
+    if(data&&data.notes)notes=data.notes;
+  }catch(e){}
+
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'pt',format:'letter'});
+  const PW=612,PH=792;
+  const NAVY='#0D1B2A',ACCENT='#2A7AE4',LIGHT='#F0F4FA',MID='#8A9BB0',TEXT='#1C2B3A';
+  const vColor={MANIPULATED:'#DC2626',AUTHENTIC:'#16A34A',INCONCLUSIVE:'#D97706'}[c.verdict]||'#6B7280';
+  const generatedAt=new Date().toISOString().replace('T',' ').slice(0,19)+' UTC';
+  const reportId='RPT-'+caseId+'-'+Date.now().toString().slice(-6);
+
+  // ── HELPER FUNCTIONS ────────────────────────────────────────────────
+  function setFill(hex){doc.setFillColor(...hexRgb(hex));}
+  function setDraw(hex){doc.setDrawColor(...hexRgb(hex));}
+  function setTxt(hex){doc.setTextColor(...hexRgb(hex));}
+  function hexRgb(h){const x=h.replace('#','');return[parseInt(x.slice(0,2),16),parseInt(x.slice(2,4),16),parseInt(x.slice(4,6),16)];}
+  function drawRoundRect(x,y,w,h,r,fill,stroke){
+    if(fill){setFill(fill);doc.roundedRect(x,y,w,h,r,r,'F');}
+    if(stroke){setDraw(stroke);doc.roundedRect(x,y,w,h,r,r,'S');}
+  }
+  function label(txt,x,y,size,color,font){
+    doc.setFontSize(size);setTxt(color);doc.setFont('helvetica',font||'normal');
+    doc.text(txt,x,y);
+  }
+  function wrapText(txt,x,y,maxW,lineH,size,color){
+    doc.setFontSize(size);setTxt(color);doc.setFont('helvetica','normal');
+    const lines=doc.splitTextToSize(txt,maxW);
+    lines.forEach((l,i)=>doc.text(l,x,y+i*lineH));
+    return y+lines.length*lineH;
+  }
+  function pill(txt,x,y,bgHex,txtHex){
+    const w=doc.getTextWidth(txt)+16;
+    drawRoundRect(x,y-10,w,16,4,bgHex,null);
+    label(txt,x+8,y,7.5,txtHex,'bold');
+    return w;
+  }
+
+  let y=0;
+
+  // ══════════════════════════════════════════════════════════════════
+  // PAGE 1 — COVER
+  // ══════════════════════════════════════════════════════════════════
+
+  // Navy header band
+  setFill(NAVY);doc.rect(0,0,PW,110,'F');
+
+  // Revlar logo mark (SVG path approximated as lines)
+  const lx=44,ly=28,ls=42;
+  doc.setLineWidth(2.5);
+  setDraw('#FFFFFF');
+  // Triangle strokes
+  doc.line(lx+ls*0.5,ly,lx+ls,ly+ls*0.7);       // right leg
+  doc.line(lx,ly+ls*0.7,lx+ls*0.5,ly);           // left leg
+  doc.line(lx,ly+ls*0.7,lx+ls*0.3,ly+ls*0.7);   // left base
+  setDraw(ACCENT);
+  doc.line(lx+ls*0.3,ly+ls*0.7,lx+ls*0.6,ly+ls*0.7); // amber mid base
+  setDraw('rgba(255,255,255,0.2)');
+  doc.line(lx+ls*0.6,ly+ls*0.7,lx+ls,ly+ls*0.7); // faint right base
+  // Circle at base midpoint
+  setFill('#FFFFFF');doc.circle(lx+ls*0.5,ly+ls*0.7,3,'F');
+
+  // REVLAR wordmark
+  label('REVLAR',110,52,22,ACCENT,'bold');
+  label('AI Media Verification Report',110,70,10,'#94AECB','normal');
+
+  // Report ID top right
+  label(reportId,PW-44,38,8,'#94AECB','normal');
+  doc.setFontSize(8);setTxt('#94AECB');
+  doc.text('Generated: '+generatedAt,PW-44,52,{align:'right'});
+
+  // Accent bottom line of header
+  setFill(ACCENT);doc.rect(0,106,PW,4,'F');
+
+  // ── CLIENT + REVLAR LOGO ROW ────────────────────────────────────
+  y=140;
+  if(reportLogoDataUrl){
+    try{
+      const fmt=reportLogoDataUrl.includes('png')?'PNG':'JPEG';
+      doc.addImage(reportLogoDataUrl,fmt,44,y,100,44,'','FAST');
+    }catch(e){}
+    // Divider
+    setFill(MID);doc.rect(158,y+8,1,28,'F');
+    // Revlar label right of divider
+    label('Verified by',170,y+18,7,MID,'normal');
+    label('Revlar',170,y+32,10,NAVY,'bold');
+    label('AI Media Investigation Platform',170,y+44,7,MID,'normal');
+  } else {
+    // Revlar branding only
+    label('Verified by Revlar',44,y+20,9,MID,'normal');
+    label('AI Media Investigation Platform',44,y+34,8,MID,'normal');
+  }
+
+  // ── VERDICT HERO ────────────────────────────────────────────────
+  y=210;
+  drawRoundRect(44,y,PW-88,88,6,LIGHT,null);
+  // Verdict label
+  label('VERIFICATION VERDICT',56,y+18,7,MID,'bold');
+  // Verdict text
+  doc.setFontSize(28);setTxt(vColor);doc.setFont('helvetica','bold');
+  doc.text(c.verdict,56,y+52);
+  // Score circle
+  const cx=PW-100,cy=y+44,cr=30;
+  setFill('#FFFFFF');doc.circle(cx,cy,cr,'F');
+  setDraw(vColor);doc.setLineWidth(3);doc.circle(cx,cy,cr,'S');
+  doc.setLineWidth(1);
+  label(String(c.score||0),cx,cy+5,20,vColor,'bold');
+  doc.setFontSize(7);setTxt(MID);doc.text('/ 100',cx,cy+17,{align:'center'});
+  // Sub label
+  const subTxt={MANIPULATED:'AI-generation or deepfake signatures detected.',AUTHENTIC:'No synthetic media signatures detected.',INCONCLUSIVE:'Borderline result — analyst review recommended.'}[c.verdict]||'';
+  label(subTxt,56,y+68,8,MID,'normal');
+
+  // ── CASE METADATA TABLE ─────────────────────────────────────────
+  y=320;
+  label('CASE INFORMATION',44,y,8,ACCENT,'bold');
+  y+=12;
+  setFill('#E8F0FB');doc.rect(44,y,PW-88,1,'F');
+  y+=10;
+
+  const metaFields=[
+    ['Case Reference',c.id],
+    ['Client / Matter',c.client],
+    ['Content Type',c.type],
+    ['Urgency',c.urgency||'Standard'],
+    ['Assigned Analyst',c.analyst],
+    ['Submission Date',c.date],
+    ['Report Generated',generatedAt],
+    ['Report ID',reportId],
+  ];
+  const colW=(PW-88)/2;
+  metaFields.forEach((f,i)=>{
+    const col=i%2;
+    const row=Math.floor(i/2);
+    const fx=44+col*colW;
+    const fy=y+row*34;
+    if(i%2===0&&i>0){} // rows auto
+    label(f[0].toUpperCase(),fx,fy+10,7,MID,'bold');
+    label(f[1]||'—',fx,fy+22,9,TEXT,'normal');
+  });
+
+  y+=Math.ceil(metaFields.length/2)*34+16;
+
+  // File hash
+  if(c.file_hash){
+    setFill(LIGHT);doc.rect(44,y,PW-88,28,'F');
+    label('FILE INTEGRITY — SHA-256',52,y+11,7,MID,'bold');
+    doc.setFontSize(7);setTxt(TEXT);doc.setFont('helvetica','normal');
+    doc.text(c.file_hash,52,y+22,{maxWidth:PW-106});
+    y+=38;
+  }
+
+  // ── DETECTION ENGINES ───────────────────────────────────────────
+  y+=10;
+  label('DETECTION ENGINES',44,y,8,ACCENT,'bold');
+  y+=12;
+  setFill('#E8F0FB');doc.rect(44,y,PW-88,1,'F');
+  y+=10;
+
+  const isAudio=c.type==='Audio';
+  const engines=[];
+  if(!isAudio){engines.push({name:'Hive Moderation',sub:'AI-Generated & Deepfake Detection · Live API v3',score:c.score,flagged:c.verdict==='MANIPULATED'});}
+  if(isAudio){engines.push({name:'Resemble Detect',sub:'Synthetic Voice & Audio · Live API v2',score:c.score,flagged:c.verdict==='MANIPULATED'});}
+  engines.push({name:'Reality Defender',sub:'Multi-modal Ensemble · Integration Pending',score:null,pending:true});
+  engines.push({name:'Sensity AI',sub:'Forensic Analysis · Integration Planned',score:null,pending:true});
+
+  engines.forEach(e=>{
+    if(y>PH-120){doc.addPage();y=60;}
+    drawRoundRect(44,y,PW-88,52,4,LIGHT,null);
+    // Engine name + sub
+    label(e.name,60,y+17,9,TEXT,'bold');
+    label(e.sub,60,y+29,7.5,MID,'normal');
+    // Badge
+    const bdgTxt=e.pending?'PENDING':e.flagged?'FLAGGED':'CLEAR';
+    const bdgBg=e.pending?'#E5EAF3':e.flagged?'#FEE2E2':'#DCFCE7';
+    const bdgCol=e.pending?MID:e.flagged?'#DC2626':'#16A34A';
+    pill(bdgTxt,PW-130,y+20,bdgBg,bdgCol);
+    // Score bar if available
+    if(e.score!=null){
+      const barX=60,barY=y+38,barW=PW-200,barH=5;
+      setFill('#E2EAF3');doc.roundedRect(barX,barY,barW,barH,2,2,'F');
+      const fillColor=e.score>=75?'#DC2626':e.score>=50?'#D97706':'#16A34A';
+      setFill(fillColor);doc.roundedRect(barX,barY,barW*(e.score/100),barH,2,2,'F');
+      label(String(e.score)+' / 100',PW-128,barY+5,7.5,TEXT,'bold');
+    }
+    y+=60;
+  });
+
+  // ── ANALYST NOTES ───────────────────────────────────────────────
+  if(notes&&notes.trim()){
+    if(y>PH-160){doc.addPage();y=60;}
+    y+=10;
+    label('ANALYST NOTES',44,y,8,ACCENT,'bold');
+    y+=12;
+    setFill('#E8F0FB');doc.rect(44,y,PW-88,1,'F');
+    y+=14;
+    drawRoundRect(44,y,PW-88,8,4,LIGHT,null);
+    y=wrapText(notes,56,y+16,PW-110,13,9,TEXT);
+    y+=16;
+  }
+
+  // ── ACTIVITY LOG ────────────────────────────────────────────────
+  const caseActivity=activityLog.filter(a=>a.action&&a.action.includes(caseId));
+  if(caseActivity.length){
+    if(y>PH-160){doc.addPage();y=60;}
+    y+=10;
+    label('CHAIN OF CUSTODY — ACTIVITY LOG',44,y,8,ACCENT,'bold');
+    y+=12;
+    setFill('#E8F0FB');doc.rect(44,y,PW-88,1,'F');
+    y+=10;
+    caseActivity.slice().reverse().forEach(a=>{
+      if(y>PH-80){doc.addPage();y=60;}
+      setFill(LIGHT);doc.rect(44,y,PW-88,22,'F');
+      label(a.user,52,y+14,8,NAVY,'bold');
+      label(a.action,52+doc.getTextWidth(a.user)+8,y+14,8,TEXT,'normal');
+      label(a.time,PW-80,y+14,7.5,MID,'normal');
+      y+=26;
+    });
+  }
+
+  // ── FOOTER / DISCLAIMER ─────────────────────────────────────────
+  // Add disclaimer on a new page if not enough space, else append
+  if(y>PH-140){doc.addPage();y=60;}
+  y+=20;
+  setFill('#E8F0FB');doc.rect(44,y,PW-88,1,'F');
+  y+=14;
+  label('LEGAL DISCLAIMER',44,y,8,MID,'bold');
+  y+=14;
+  const disclaimer='This report has been generated by Revlar AI Media Investigation Platform and is intended for use by the authorized recipient only. The findings contained herein are based on automated analysis performed by third-party detection engines including Hive Moderation API and Resemble Detect. Revlar does not guarantee the absolute accuracy of detection results. This report does not constitute legal advice and should be reviewed by a qualified professional before being used as evidence in any legal, regulatory, or judicial proceeding. Unauthorized disclosure, reproduction, or distribution of this report is strictly prohibited. All media files submitted for analysis are stored in encrypted form and processed in accordance with Revlar's data handling policies.';
+  y=wrapText(disclaimer,44,y,PW-88,12,7.5,MID);
+
+  // Bottom bar on every page
+  const totalPages=doc.internal.getNumberOfPages();
+  for(let i=1;i<=totalPages;i++){
+    doc.setPage(i);
+    setFill(NAVY);doc.rect(0,PH-32,PW,32,'F');
+    label('REVLAR · AI Media Investigation Platform · Confidential',44,PH-13,7,'#94AECB','normal');
+    label('Page '+i+' of '+totalPages,PW-44,PH-13,7,'#94AECB','normal');
+    doc.setFontSize(7);setTxt('#94AECB');
+    doc.text(reportId,PW/2,PH-13,{align:'center'});
+  }
+
+  // ── SAVE ────────────────────────────────────────────────────────
+  doc.save(reportId+'.pdf');
+  logActivity('Generated report '+reportId+' for case '+caseId);
+  renderActivityLog();
+  if(currentCaseId===caseId)buildCaseActivity(caseId);
 }
 
 function renderClients(){
@@ -1050,7 +1348,7 @@ function applyVerdict(res){
   anomCount.textContent=flagged?'1 finding · 1 Critical':'No anomalies above threshold';
   anom.innerHTML=flagged?'<div class="anom-item"><div class="anom-sev-wrap"><span class="ap" style="background:rgba(239,68,68,.15);color:#ef4444">CRITICAL</span></div><div><div class="anom-body-name">'+(isAudio?'Synthetic voice signature detected':'AI-generation signature detected')+'</div><div class="anom-body-desc">'+(isAudio?('Resemble confidence '+aiPct+'% synthetic voice.'):('Hive confidence '+aiPct+'% AI-generated'+(dfPct>=50?', '+dfPct+'% deepfake':'')+'.'))+'</div><div class="anom-body-tool">'+engineSlug+'</div></div></div>':'<div style="padding:14px 16px;color:var(--muted);font-size:12px">No synthetic-media indicators above threshold.</div>';
 }
-function generateReport(){const c=document.getElementById('nc-client').value||'Unknown Client',r=document.getElementById('nc-ref').value;alert('Report '+r+' for '+c+'\nSigned by: '+currentUser.name+' ('+currentUser.role+')\n\nPDF generation goes live once the backend API is connected.');logActivity('Generated report '+r+' for '+c);renderActivityLog();}
+// generateReport is now defined above in the Reports section
 async function saveCase(){const c=document.getElementById('nc-client').value||'Unknown Client',r=document.getElementById('nc-ref').value,u=document.getElementById('nc-urgency').value.split(' — ')[0],type=document.getElementById('nc-type').value,date='Jun '+new Date().getDate()+' 2026';const vd=currentResult&&currentResult.ok?currentResult.verdict:'INCONCLUSIVE',sc=currentResult&&currentResult.ok?currentResult.manipulation_score:0;const {error}=await sb.from('cases').insert({case_ref:r,client:c,type,verdict:vd,score:sc,status:'Complete',analyst:currentUser.name,urgency:u,date,file_path:currentUpload?currentUpload.path:null,file_hash:currentUpload?currentUpload.hash:null});if(error){alert('Could not save case: '+error.message);return;}cases.push({id:r,client:c,type,verdict:vd,score:sc,status:'Complete',analyst:currentUser.name,date,urgency:u});logActivity('Saved case '+r+' — '+c);document.getElementById('badge-cases').textContent=cases.length;renderDashboard();renderActivityLog();refreshCaseRef();alert('Case '+r+' saved to database.');}
 function resetNewCase(){
   currentUpload=null;currentResult=null;analysisPromise=null;
