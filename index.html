@@ -980,13 +980,13 @@ async function generateReport(caseId){
   const reportId='RPT-'+caseId+'-'+Date.now().toString().slice(-6);
 
   // ── HELPER FUNCTIONS ────────────────────────────────────────────────
-  function setFill(hex){doc.setFillColor(...hexRgb(hex));}
-  function setDraw(hex){doc.setDrawColor(...hexRgb(hex));}
-  function setTxt(hex){doc.setTextColor(...hexRgb(hex));}
   function hexRgb(h){const x=h.replace('#','');return[parseInt(x.slice(0,2),16),parseInt(x.slice(2,4),16),parseInt(x.slice(4,6),16)];}
+  function setFill(hex){const [r,g,b]=hexRgb(hex);doc.setFillColor(r,g,b);}
+  function setDraw(hex){const [r,g,b]=hexRgb(hex);doc.setDrawColor(r,g,b);}
+  function setTxt(hex){const [r,g,b]=hexRgb(hex);doc.setTextColor(r,g,b);}
   function drawRoundRect(x,y,w,h,r,fill,stroke){
-    if(fill){setFill(fill);doc.roundedRect(x,y,w,h,r,r,'F');}
-    if(stroke){setDraw(stroke);doc.roundedRect(x,y,w,h,r,r,'S');}
+    if(fill){setFill(fill);doc.rect(x,y,w,h,'F');}
+    if(stroke){setDraw(stroke);doc.rect(x,y,w,h,'S');}
   }
   function label(txt,x,y,size,color,font){
     doc.setFontSize(size);setTxt(color);doc.setFont('helvetica',font||'normal');
@@ -1146,9 +1146,9 @@ async function generateReport(caseId){
     // Score bar if available
     if(e.score!=null){
       const barX=60,barY=y+38,barW=PW-200,barH=5;
-      setFill('#E2EAF3');doc.roundedRect(barX,barY,barW,barH,2,2,'F');
+      setFill('#E2EAF3');doc.rect(barX,barY,barW,barH,'F');
       const fillColor=e.score>=75?'#DC2626':e.score>=50?'#D97706':'#16A34A';
-      setFill(fillColor);doc.roundedRect(barX,barY,barW*(e.score/100),barH,2,2,'F');
+      setFill(fillColor);doc.rect(barX,barY,barW*(e.score/100),barH,'F');
       label(String(e.score)+' / 100',PW-128,barY+5,7.5,TEXT,'bold');
     }
     y+=60;
