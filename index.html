@@ -3,7 +3,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@500,600,700,800,900&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 /* DARK MODE (default) */
@@ -319,6 +318,53 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
 .cd-status-btn.active-status{background:rgba(245,158,11,.12);border-color:var(--amber);color:var(--amber)}
 .cd-full-width{grid-column:1/-1}
 .cd-hash{font-family:monospace;font-size:10px;color:var(--muted);word-break:break-all;opacity:.7;margin-top:4px}
+
+/* ── PRINT REPORT ── */
+#print-report{display:none}
+@media print{
+  body>*{display:none!important}
+  #print-report{display:block!important;font-family:'Inter',sans-serif;color:#1C2B3A;background:#fff;margin:0;padding:0}
+  @page{margin:18mm 16mm;size:letter}
+}
+.pr-page{page-break-after:always}
+.pr-page:last-child{page-break-after:auto}
+.pr-header{background:#0D1B2A;color:#fff;padding:28px 32px;display:flex;align-items:center;justify-content:space-between;margin:-0px}
+.pr-logo-word{font-size:22px;font-weight:800;color:#2A7AE4;letter-spacing:1px}
+.pr-logo-sub{font-size:9px;color:#8A9BB0;margin-top:3px;letter-spacing:.5px}
+.pr-report-id{font-size:9px;color:#8A9BB0;text-align:right}
+.pr-accent{height:4px;background:#2A7AE4;margin:0}
+.pr-body{padding:28px 32px}
+.pr-client-row{display:flex;align-items:center;gap:24px;margin-bottom:24px;padding-bottom:20px;border-bottom:2px solid #E8F0FB}
+.pr-client-logo{max-height:48px;max-width:120px;object-fit:contain}
+.pr-client-divider{width:1px;height:40px;background:#CBD5E1}
+.pr-revlar-tag{font-size:10px;color:#8A9BB0}
+.pr-revlar-name{font-size:13px;font-weight:700;color:#0D1B2A}
+.pr-verdict-box{background:#F0F4FA;border-radius:8px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.pr-verdict-label{font-size:9px;color:#8A9BB0;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+.pr-verdict-text{font-size:26px;font-weight:800;letter-spacing:-.5px}
+.pr-score-circle{width:72px;height:72px;border-radius:50%;border:3px solid currentColor;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.pr-score-num{font-size:22px;font-weight:800;line-height:1}
+.pr-score-sub{font-size:8px;color:#8A9BB0;margin-top:2px}
+.pr-section-title{font-size:9px;font-weight:700;color:#2A7AE4;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;margin-top:20px}
+.pr-divider{height:1px;background:#E8F0FB;margin-bottom:12px}
+.pr-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;margin-bottom:16px}
+.pr-meta-field-label{font-size:8px;font-weight:700;color:#8A9BB0;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.pr-meta-field-val{font-size:11px;color:#1C2B3A;font-weight:500}
+.pr-hash{font-family:monospace;font-size:8px;color:#8A9BB0;word-break:break-all;background:#F0F4FA;padding:6px 8px;border-radius:4px;margin-bottom:16px}
+.pr-engine-row{display:flex;align-items:center;gap:12px;padding:10px 12px;background:#F8FAFD;border-radius:6px;margin-bottom:6px}
+.pr-engine-name{flex:1;font-size:11px;font-weight:600;color:#1C2B3A}
+.pr-engine-sub{font-size:9px;color:#8A9BB0;margin-top:1px}
+.pr-badge{font-size:8px;font-weight:700;padding:3px 8px;border-radius:3px;letter-spacing:.5px}
+.pr-bar-wrap{width:80px}
+.pr-bar-track{height:5px;background:#E2EAF3;border-radius:3px;overflow:hidden;margin-top:4px}
+.pr-bar-fill{height:100%;border-radius:3px}
+.pr-notes{background:#F0F4FA;border-radius:6px;padding:12px 14px;font-size:11px;color:#1C2B3A;line-height:1.6;white-space:pre-wrap;margin-bottom:16px}
+.pr-alog-row{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid #F0F4FA;font-size:10px}
+.pr-alog-user{font-weight:700;color:#0D1B2A;min-width:80px}
+.pr-alog-action{flex:1;color:#4A6080}
+.pr-alog-time{color:#8A9BB0;min-width:90px;text-align:right}
+.pr-disclaimer{font-size:8px;color:#8A9BB0;line-height:1.6;padding:14px;background:#F8FAFD;border-radius:6px;margin-top:20px}
+.pr-footer{background:#0D1B2A;color:#8A9BB0;padding:12px 32px;display:flex;justify-content:space-between;font-size:8px;margin-top:20px}
 </style></head><body>
 
 <!-- ══════════════ LOGIN ══════════════ -->
@@ -746,6 +792,9 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
   </div>
 </div>
 
+<!-- PRINT REPORT DIV -->
+<div id="print-report"></div>
+
 <!-- ADD CLIENT MODAL -->
 <div class="modal-overlay" id="add-client-modal">
   <div class="modal">
@@ -964,527 +1013,146 @@ async function generateReport(caseId){
   const c=cases.find(x=>x.id===caseId);
   if(!c){alert('Case not found.');return;}
 
-  // Fetch latest notes from DB
+  // Fetch latest notes
   let notes=c.notes||'';
-  try{
-    const {data}=await sb.from('cases').select('notes').eq('case_ref',caseId).single();
-    if(data&&data.notes)notes=data.notes;
-  }catch(e){}
+  try{const {data}=await sb.from('cases').select('notes').eq('case_ref',caseId).single();if(data&&data.notes)notes=data.notes;}catch(e){}
 
-  const jsPDF=window.jspdf&&window.jspdf.jsPDF?window.jspdf.jsPDF:(window.jsPDF||null);if(!jsPDF){alert("PDF library not loaded. Please refresh the page and try again.");return;}
-  const doc=new jsPDF({orientation:'portrait',unit:'pt',format:'letter'});
-  const PW=612,PH=792;
-  const NAVY='#0D1B2A',ACCENT='#2A7AE4',LIGHT='#F0F4FA',MID='#8A9BB0',TEXT='#1C2B3A';
-  const vColor={MANIPULATED:'#DC2626',AUTHENTIC:'#16A34A',INCONCLUSIVE:'#D97706'}[c.verdict]||'#6B7280';
   const generatedAt=new Date().toISOString().replace('T',' ').slice(0,19)+' UTC';
   const reportId='RPT-'+caseId+'-'+Date.now().toString().slice(-6);
-
-  // ── HELPER FUNCTIONS ────────────────────────────────────────────────
-  function hexRgb(h){const x=h.replace('#','');return[parseInt(x.slice(0,2),16),parseInt(x.slice(2,4),16),parseInt(x.slice(4,6),16)];}
-  function setFill(hex){const [r,g,b]=hexRgb(hex);doc.setFillColor(r,g,b);}
-  function setDraw(hex){const [r,g,b]=hexRgb(hex);doc.setDrawColor(r,g,b);}
-  function setTxt(hex){const [r,g,b]=hexRgb(hex);doc.setTextColor(r,g,b);}
-  function drawRoundRect(x,y,w,h,r,fill,stroke){
-    if(fill){setFill(fill);doc.rect(x,y,w,h,'F');}
-    if(stroke){setDraw(stroke);doc.rect(x,y,w,h,'S');}
-  }
-  function label(txt,x,y,size,color,font){
-    doc.setFontSize(size);setTxt(color);doc.setFont('helvetica',font||'normal');
-    doc.text(txt,x,y);
-  }
-  function wrapText(txt,x,y,maxW,lineH,size,color){
-    doc.setFontSize(size);setTxt(color);doc.setFont('helvetica','normal');
-    const lines=doc.splitTextToSize(txt,maxW);
-    lines.forEach((l,i)=>doc.text(l,x,y+i*lineH));
-    return y+lines.length*lineH;
-  }
-  function pill(txt,x,y,bgHex,txtHex){
-    const w=doc.getTextWidth(txt)+16;
-    drawRoundRect(x,y-10,w,16,4,bgHex,null);
-    label(txt,x+8,y,7.5,txtHex,'bold');
-    return w;
-  }
-
-  let y=0;
-
-  // ══════════════════════════════════════════════════════════════════
-  // PAGE 1 — COVER
-  // ══════════════════════════════════════════════════════════════════
-
-  // Navy header band
-  setFill(NAVY);doc.rect(0,0,PW,110,'F');
-
-  // Revlar logo mark (SVG path approximated as lines)
-  const lx=44,ly=28,ls=42;
-  doc.setLineWidth(2.5);
-  setDraw('#FFFFFF');
-  // Triangle strokes
-  doc.line(lx+ls*0.5,ly,lx+ls,ly+ls*0.7);       // right leg
-  doc.line(lx,ly+ls*0.7,lx+ls*0.5,ly);           // left leg
-  doc.line(lx,ly+ls*0.7,lx+ls*0.3,ly+ls*0.7);   // left base
-  setDraw(ACCENT);
-  doc.line(lx+ls*0.3,ly+ls*0.7,lx+ls*0.6,ly+ls*0.7); // amber mid base
-  setDraw('rgba(255,255,255,0.2)');
-  doc.line(lx+ls*0.6,ly+ls*0.7,lx+ls,ly+ls*0.7); // faint right base
-  // Circle at base midpoint
-  setFill('#FFFFFF');doc.circle(lx+ls*0.5,ly+ls*0.7,3,'F');
-
-  // REVLAR wordmark
-  label('REVLAR',110,52,22,ACCENT,'bold');
-  label('AI Media Verification Report',110,70,10,'#94AECB','normal');
-
-  // Report ID top right
-  label(reportId,PW-44,38,8,'#94AECB','normal');
-  doc.setFontSize(8);setTxt('#94AECB');
-  doc.text('Generated: '+generatedAt,PW-44,52,{align:'right'});
-
-  // Accent bottom line of header
-  setFill(ACCENT);doc.rect(0,106,PW,4,'F');
-
-  // ── CLIENT + REVLAR LOGO ROW ────────────────────────────────────
-  y=140;
-  if(reportLogoDataUrl){
-    try{
-      const fmt=reportLogoDataUrl.includes('png')?'PNG':'JPEG';
-      doc.addImage(reportLogoDataUrl,fmt,44,y,100,44,'','FAST');
-    }catch(e){}
-    // Divider
-    setFill(MID);doc.rect(158,y+8,1,28,'F');
-    // Revlar label right of divider
-    label('Verified by',170,y+18,7,MID,'normal');
-    label('Revlar',170,y+32,10,NAVY,'bold');
-    label('AI Media Investigation Platform',170,y+44,7,MID,'normal');
-  } else {
-    // Revlar branding only
-    label('Verified by Revlar',44,y+20,9,MID,'normal');
-    label('AI Media Investigation Platform',44,y+34,8,MID,'normal');
-  }
-
-  // ── VERDICT HERO ────────────────────────────────────────────────
-  y=210;
-  drawRoundRect(44,y,PW-88,88,6,LIGHT,null);
-  // Verdict label
-  label('VERIFICATION VERDICT',56,y+18,7,MID,'bold');
-  // Verdict text
-  doc.setFontSize(28);setTxt(vColor);doc.setFont('helvetica','bold');
-  doc.text(c.verdict,56,y+52);
-  // Score circle
-  const cx=PW-100,cy=y+44,cr=30;
-  setFill('#FFFFFF');doc.circle(cx,cy,cr,'F');
-  setDraw(vColor);doc.setLineWidth(3);doc.circle(cx,cy,cr,'S');
-  doc.setLineWidth(1);
-  label(String(c.score||0),cx,cy+5,20,vColor,'bold');
-  doc.setFontSize(7);setTxt(MID);doc.text('/ 100',cx,cy+17,{align:'center'});
-  // Sub label
-  const subTxt={MANIPULATED:'AI-generation or deepfake signatures detected.',AUTHENTIC:'No synthetic media signatures detected.',INCONCLUSIVE:'Borderline result — analyst review recommended.'}[c.verdict]||'';
-  label(subTxt,56,y+68,8,MID,'normal');
-
-  // ── CASE METADATA TABLE ─────────────────────────────────────────
-  y=320;
-  label('CASE INFORMATION',44,y,8,ACCENT,'bold');
-  y+=12;
-  setFill('#E8F0FB');doc.rect(44,y,PW-88,1,'F');
-  y+=10;
-
-  const metaFields=[
-    ['Case Reference',c.id],
-    ['Client / Matter',c.client],
-    ['Content Type',c.type],
-    ['Urgency',c.urgency||'Standard'],
-    ['Assigned Analyst',c.analyst],
-    ['Submission Date',c.date],
-    ['Report Generated',generatedAt],
-    ['Report ID',reportId],
-  ];
-  const colW=(PW-88)/2;
-  metaFields.forEach((f,i)=>{
-    const col=i%2;
-    const row=Math.floor(i/2);
-    const fx=44+col*colW;
-    const fy=y+row*34;
-    if(i%2===0&&i>0){} // rows auto
-    label(f[0].toUpperCase(),fx,fy+10,7,MID,'bold');
-    label(f[1]||'—',fx,fy+22,9,TEXT,'normal');
-  });
-
-  y+=Math.ceil(metaFields.length/2)*34+16;
-
-  // File hash
-  if(c.file_hash){
-    setFill(LIGHT);doc.rect(44,y,PW-88,28,'F');
-    label('FILE INTEGRITY — SHA-256',52,y+11,7,MID,'bold');
-    doc.setFontSize(7);setTxt(TEXT);doc.setFont('helvetica','normal');
-    doc.text(c.file_hash,52,y+22,{maxWidth:PW-106});
-    y+=38;
-  }
-
-  // ── DETECTION ENGINES ───────────────────────────────────────────
-  y+=10;
-  label('DETECTION ENGINES',44,y,8,ACCENT,'bold');
-  y+=12;
-  setFill('#E8F0FB');doc.rect(44,y,PW-88,1,'F');
-  y+=10;
-
+  const vColor={MANIPULATED:'#DC2626',AUTHENTIC:'#16A34A',INCONCLUSIVE:'#D97706'}[c.verdict]||'#6B7280';
   const isAudio=c.type==='Audio';
+  const caseActivity=activityLog.filter(a=>a.action&&a.action.includes(caseId));
+
+  // Build engines list
   const engines=[];
   if(!isAudio){engines.push({name:'Hive Moderation',sub:'AI-Generated & Deepfake Detection · Live API v3',score:c.score,flagged:c.verdict==='MANIPULATED'});}
   if(isAudio){engines.push({name:'Resemble Detect',sub:'Synthetic Voice & Audio · Live API v2',score:c.score,flagged:c.verdict==='MANIPULATED'});}
   engines.push({name:'Reality Defender',sub:'Multi-modal Ensemble · Integration Pending',score:null,pending:true});
   engines.push({name:'Sensity AI',sub:'Forensic Analysis · Integration Planned',score:null,pending:true});
 
-  engines.forEach(e=>{
-    if(y>PH-120){doc.addPage();y=60;}
-    drawRoundRect(44,y,PW-88,52,4,LIGHT,null);
-    // Engine name + sub
-    label(e.name,60,y+17,9,TEXT,'bold');
-    label(e.sub,60,y+29,7.5,MID,'normal');
-    // Badge
-    const bdgTxt=e.pending?'PENDING':e.flagged?'FLAGGED':'CLEAR';
-    const bdgBg=e.pending?'#E5EAF3':e.flagged?'#FEE2E2':'#DCFCE7';
-    const bdgCol=e.pending?MID:e.flagged?'#DC2626':'#16A34A';
-    pill(bdgTxt,PW-130,y+20,bdgBg,bdgCol);
-    // Score bar if available
-    if(e.score!=null){
-      const barX=60,barY=y+38,barW=PW-200,barH=5;
-      setFill('#E2EAF3');doc.rect(barX,barY,barW,barH,'F');
-      const fillColor=e.score>=75?'#DC2626':e.score>=50?'#D97706':'#16A34A';
-      setFill(fillColor);doc.rect(barX,barY,barW*(e.score/100),barH,'F');
-      label(String(e.score)+' / 100',PW-128,barY+5,7.5,TEXT,'bold');
-    }
-    y+=60;
-  });
-
-  // ── ANALYST NOTES ───────────────────────────────────────────────
-  if(notes&&notes.trim()){
-    if(y>PH-160){doc.addPage();y=60;}
-    y+=10;
-    label('ANALYST NOTES',44,y,8,ACCENT,'bold');
-    y+=12;
-    setFill('#E8F0FB');doc.rect(44,y,PW-88,1,'F');
-    y+=14;
-    drawRoundRect(44,y,PW-88,8,4,LIGHT,null);
-    y=wrapText(notes,56,y+16,PW-110,13,9,TEXT);
-    y+=16;
-  }
-
-  // ── ACTIVITY LOG ────────────────────────────────────────────────
-  const caseActivity=activityLog.filter(a=>a.action&&a.action.includes(caseId));
-  if(caseActivity.length){
-    if(y>PH-160){doc.addPage();y=60;}
-    y+=10;
-    label('CHAIN OF CUSTODY — ACTIVITY LOG',44,y,8,ACCENT,'bold');
-    y+=12;
-    setFill('#E8F0FB');doc.rect(44,y,PW-88,1,'F');
-    y+=10;
-    caseActivity.slice().reverse().forEach(a=>{
-      if(y>PH-80){doc.addPage();y=60;}
-      setFill(LIGHT);doc.rect(44,y,PW-88,22,'F');
-      label(a.user,52,y+14,8,NAVY,'bold');
-      label(a.action,52+doc.getTextWidth(a.user)+8,y+14,8,TEXT,'normal');
-      label(a.time,PW-80,y+14,7.5,MID,'normal');
-      y+=26;
-    });
-  }
-
-  // ── FOOTER / DISCLAIMER ─────────────────────────────────────────
-  // Add disclaimer on a new page if not enough space, else append
-  if(y>PH-140){doc.addPage();y=60;}
-  y+=20;
-  setFill('#E8F0FB');doc.rect(44,y,PW-88,1,'F');
-  y+=14;
-  label('LEGAL DISCLAIMER',44,y,8,MID,'bold');
-  y+=14;
-  const disclaimer='This report has been generated by Revlar AI Media Investigation Platform and is intended for use by the authorized recipient only. The findings contained herein are based on automated analysis performed by third-party detection engines including Hive Moderation API and Resemble Detect. Revlar does not guarantee the absolute accuracy of detection results. This report does not constitute legal advice and should be reviewed by a qualified professional before being used as evidence in any legal, regulatory, or judicial proceeding. Unauthorized disclosure, reproduction, or distribution of this report is strictly prohibited. All media files submitted for analysis are stored in encrypted form and processed in accordance with Revlar data handling policies.';
-  y=wrapText(disclaimer,44,y,PW-88,12,7.5,MID);
-
-  // Bottom bar on every page
-  const totalPages=doc.internal.getNumberOfPages();
-  for(let i=1;i<=totalPages;i++){
-    doc.setPage(i);
-    setFill(NAVY);doc.rect(0,PH-32,PW,32,'F');
-    label('REVLAR · AI Media Investigation Platform · Confidential',44,PH-13,7,'#94AECB','normal');
-    label('Page '+i+' of '+totalPages,PW-44,PH-13,7,'#94AECB','normal');
-    doc.setFontSize(7);setTxt('#94AECB');
-    doc.text(reportId,PW/2,PH-13,{align:'center'});
-  }
-
-  // ── SAVE ────────────────────────────────────────────────────────
-  doc.save(reportId+'.pdf');
-  logActivity('Generated report '+reportId+' for case '+caseId);
-  renderActivityLog();
-  if(currentCaseId===caseId)buildCaseActivity(caseId);
-}
-
-function renderClients(){
-  document.getElementById('clients-grid').innerHTML=clients.map(c=>{const cc=cases.filter(cs=>cs.client===c.name);return`<div class="client-card"><div class="client-name">${c.name}</div><div class="client-meta">${c.type} · ${c.contact}</div><div class="client-stats"><div class="cs-item"><span class="cs-val">${cc.length}</span>Cases</div><div class="cs-item"><span class="cs-val">${cc.filter(x=>x.status==='Complete').length}</span>Done</div><div class="cs-item"><span class="cs-val">${cc.filter(x=>x.verdict==='MANIPULATED').length}</span>Flagged</div></div></div>`;}).join('');
-}
-async function addClient(){
-  const n=document.getElementById('new-client-name').value.trim();if(!n)return;
-  const contact=document.getElementById('new-client-contact').value,type=document.getElementById('new-client-type').value;
-  const {error}=await sb.from('clients').insert({name:n,contact,type});
-  if(error){alert('Could not save client: '+error.message);return;}
-  clients.push({name:n,contact,type});
-  logActivity('Added client: '+n);document.getElementById('add-client-modal').classList.remove('show');renderClients();renderActivityLog();renderDashboard();
-  document.getElementById('new-client-name').value='';document.getElementById('new-client-contact').value='';
-}
-
-function logActivity(a){const n=new Date();const time='Jun '+n.getDate()+' · '+n.getHours()+':'+(n.getMinutes()<10?'0':'')+n.getMinutes();const uname=currentUser.name;activityLog.push({user:uname,action:a,time});sb.from('activity_log').insert({user_name:uname,action:a,time}).then(({error})=>{if(error)console.error('activity insert failed',error);});}
-function renderActivityLog(){document.getElementById('activity-log-table').innerHTML=`<thead><tr><th>Analyst</th><th>Action</th><th>Time</th></tr></thead><tbody>${activityLog.slice().reverse().map(a=>`<tr><td><div class="analyst-tag"><div class="analyst-dot" style="background:${USERS[a.user==='Founder'?'founder':'cofounder'].color}"></div><span style="font-weight:600;color:var(--body)">${a.user}</span></div></td><td>${a.action}</td><td style="color:var(--muted);font-size:11px">${a.time}</td></tr>`).join('')}</tbody>`;}
-
-function renderChart(){const m=[{l:'Jan',v:0},{l:'Feb',v:0},{l:'Mar',v:0},{l:'Apr',v:1},{l:'May',v:2},{l:'Jun',v:6}];document.getElementById('chart-bars').innerHTML=m.map(x=>`<div class="bar-col"><div class="bar-val-lbl">${x.v||''}</div><div class="bar-visual" style="height:${x.v?Math.max((x.v/6)*130,8):4}px;opacity:${x.v?0.85:0.2}"></div><div class="bar-lbl">${x.l}</div></div>`).join('');}
-
-// ── NEW CASE ──
-function getIcon(n){if(!n)return'📁';const e=n.split('.').pop().toLowerCase();if(['mp4','mov','avi','webm'].includes(e))return'🎬';if(['mp3','wav','aac'].includes(e))return'🎵';return'🖼️';}
-function fmtSize(b){if(b>1e9)return(b/1e9).toFixed(1)+' GB';if(b>1e6)return(b/1e6).toFixed(1)+' MB';return(b/1e3).toFixed(0)+' KB';}
-function fakeHash(){let h='';const c='abcdef0123456789';for(let i=0;i<40;i++)h+=c[Math.floor(Math.random()*16)];return h;}
-function ncDrag(e){e.preventDefault();document.getElementById('nc-drop').classList.add('drag');}
-function ncDragLeave(){document.getElementById('nc-drop').classList.remove('drag');}
-function ncDrop(e){e.preventDefault();ncDragLeave();const f=e.dataTransfer.files[0];if(f)ncHandleFile(f);}
-let currentUpload=null,analysisPromise=null,currentResult=null;
-async function ncHandleFile(file){
-  if(!file)return;
-  currentUpload=null;
-  document.getElementById('nc-drop').style.display='none';
-  document.getElementById('nc-file-info').classList.add('show');
-  document.getElementById('nc-fi-icon').textContent=getIcon(file.name);
-  document.getElementById('nc-fi-name').textContent=file.name;
-  const recv=new Date().toISOString().replace('T',' ').slice(0,19)+' UTC';
-  document.getElementById('nc-fi-meta').textContent=fmtSize(file.size)+' · Received '+recv;
-  document.getElementById('nc-fi-hash').textContent='SHA-256: computing…';
-  // Real SHA-256 via Web Crypto (https only)
-  let hashHex='(hash unavailable)';
-  try{
-    const buf=await file.arrayBuffer();
-    const digest=await crypto.subtle.digest('SHA-256',buf);
-    hashHex=Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('');
-  }catch(e){console.error('hash failed',e);}
-  document.getElementById('nc-fi-hash').textContent='SHA-256: '+hashHex;
-  // Upload to the private Supabase Storage bucket
-  const ref=document.getElementById('nc-ref').value||'unfiled';
-  const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-  const path=ref+'/'+Date.now()+'_'+safe;
-  const {data,error}=await sb.storage.from('case-files').upload(path,file,{upsert:false});
-  if(error){console.error('upload failed',error);document.getElementById('nc-fi-meta').textContent=fmtSize(file.size)+' · Received '+recv+' · ⚠ upload failed: '+error.message;}
-  else{currentUpload={path:data.path,hash:hashHex};}
-  // Kick off the REAL Hive analysis now; it runs while the scan animation plays.
-  analysisPromise=currentUpload?analyzeFile(document.getElementById('nc-ref').value,currentUpload.path):Promise.resolve({error:'upload failed'});
-  setTimeout(()=>startScan(),600);
-}
-async function analyzeFile(caseRef,filePath){
-  try{
-    const {data,error}=await sb.functions.invoke('super-api',{body:{case_ref:caseRef,file_path:filePath}});
-    if(error)return {error:error.message||String(error)};
-    return data;
-  }catch(e){return {error:String(e)};}
-}
-const TR=[
-  {name:'Hive Moderation API',type:'AI-Generated Content',score:89,fill:'fill-r',desc:'GAN artefacts across 2,847 frames. Synthetic face flagged at 94.3% confidence.'},
-  {name:'Sensity AI',type:'Deepfake Video',score:81,fill:'fill-r',desc:'Identity verification failed. Eigenface distance 1.42 (threshold 0.85).'},
-  {name:'Intel FakeCatcher',type:'Biological Signal',score:76,fill:'fill-w',desc:'rPPG blood flow absent across 87% of frames. Blink anomaly detected.'},
-  {name:'Resemble Detect',type:'Voice Clone',score:94,fill:'fill-r',desc:'Formants deviate 12–18%. MFCC similarity 0.61. Sync drift 84ms.'},
-  {name:'Microsoft Video Authenticator',type:'Pixel Forensics',score:71,fill:'fill-a',desc:'ELA flagged 6 segments. Shadow inconsistency at 00:12:01.'},
-];
-const AN=[
-  {sev:'Critical',cls:'ap-c',time:'00:04:17',name:'Face-swap boundary artefact',desc:'Texture gradient discontinuity 4.2σ above baseline.',tool:'Hive Moderation API v3.2.1 · Frames #6,201–#6,280'},
-  {sev:'Critical',cls:'ap-c',time:'00:04:17',name:'Biological signal absent — rPPG',desc:'No cardiac-cycle blood flow signal. Indicates synthetic rendering.',tool:'Intel FakeCatcher v1.4.0'},
-  {sev:'Critical',cls:'ap-c',time:'00:07:33',name:'Audio-visual sync drift',desc:'Audio leads video by 84ms. Consistent with voice replacement.',tool:'Resemble Detect v1.1.3'},
-  {sev:'Critical',cls:'ap-c',time:'00:07:33',name:'Voice spectral mismatch',desc:'MFCC similarity 0.61 vs threshold 0.85. AI-synthesised voice.',tool:'Resemble Detect v1.1.3'},
-  {sev:'Warning',cls:'ap-w',time:'00:12:01',name:'Lighting inconsistency',desc:'Background ~220° vs facial ~160°. Possible composite.',tool:'MS Video Authenticator v2.0'},
-];
-function startScan(){
-  document.getElementById('nc-scan').classList.add('show');
-  const tools=[{id:'ts-hive',d:500},{id:'ts-sensity',d:1200},{id:'ts-fake',d:2000},{id:'ts-resemble',d:2800},{id:'ts-ms',d:3600}],pcts=[20,40,60,80,100];
-  tools.forEach((t,i)=>{
-    setTimeout(()=>{const el=document.getElementById(t.id);el.textContent='Running...';el.className='tool-status ts-run';},t.d);
-    setTimeout(()=>{const el=document.getElementById(t.id);el.textContent='✓ Complete';el.className='tool-status ts-done';document.getElementById('nc-prog').style.width=pcts[i]+'%';document.getElementById('nc-pct').textContent=pcts[i]+'%';},t.d+600);
-  });
-  setTimeout(()=>{document.getElementById('ts-human').textContent='⏳ Pending analyst sign-off';document.getElementById('nc-scan').classList.remove('show');showResults();},4800);
-}
-async function showResults(){
-  document.getElementById('nc-results').classList.add('show');
-  document.getElementById('nc-analyst-display').textContent=currentUser.name;
-  document.getElementById('nc-time-display').textContent=new Date().toISOString().replace('T',' ').slice(0,19)+' UTC';
-  const res=analysisPromise?await analysisPromise:{error:'analysis did not start'};
-  currentResult=res;
-  applyVerdict(res);
-}
-function applyVerdict(res){
-  const banner=document.getElementById('nc-verdict-banner');
-  const vEl=document.getElementById('nc-verdict-text');
-  const sNum=document.getElementById('nc-score-num');
-  const sub=document.getElementById('nc-verdict-sub');
-  const grid=document.getElementById('nc-tools-grid');
-  const anomCount=document.getElementById('nc-anom-count');
-  const anom=document.getElementById('nc-anom-body');
-  if(!res||!res.ok){
-    const msg=(res&&res.error)?res.error:'Analysis did not complete';
-    banner.style.background='rgba(245,158,11,.07)';banner.style.border='1px solid rgba(245,158,11,.3)';
-    vEl.textContent='ERROR';vEl.style.color='#f59e0b';
-    sNum.textContent='—';
-    sub.textContent='Could not analyze file: '+msg;
-    grid.innerHTML='';anomCount.textContent='';anom.innerHTML='';
-    return;
-  }
-  const verdict=res.verdict||'INCONCLUSIVE';
-  const score=res.manipulation_score!=null?res.manipulation_score:0;
-  const aiPct=Math.round((res.ai_generated||0)*100);
-  const dfPct=Math.round((res.deepfake||0)*100);
-  const C={MANIPULATED:'#ef4444',AUTHENTIC:'#22c55e',INCONCLUSIVE:'#f59e0b'}[verdict]||'#f59e0b';
-  const rgb={MANIPULATED:'239,68,68',AUTHENTIC:'34,197,94',INCONCLUSIVE:'245,158,11'}[verdict]||'245,158,11';
-  banner.style.background='rgba('+rgb+',.07)';
-  banner.style.border='1px solid rgba('+rgb+',.3)';
-  vEl.textContent=verdict;vEl.style.color=C;
-  sNum.textContent=score;
-  const isAudio=res.engine==='resemble';
-  const engineName=isAudio?'Resemble Detect':'Hive AI-Generated &amp; Deepfake Detection';
-  const engineType=isAudio?'Live API · v2 · Audio':'Live API · v3';
-  const engineSlug=isAudio?'Resemble · audio deepfake detection':'Hive · ai-generated-and-deepfake-content-detection';
-  const metricLabel=isAudio?'Synthetic Voice':'AI-Generated';
-  sub.textContent=isAudio?(verdict==='MANIPULATED'?'Resemble flagged synthetic or cloned voice':verdict==='AUTHENTIC'?'No synthetic-voice signatures detected':'Borderline result — analyst review recommended'):(verdict==='MANIPULATED'?'Hive flagged AI-generation or deepfake signatures':verdict==='AUTHENTIC'?'No AI-generation or deepfake signatures detected':'Borderline result — analyst review recommended');
-  const flagged=verdict==='MANIPULATED';
-  let bars='<div class="tc-bar-row"><span>'+metricLabel+'</span><span class="tc-bar-val">'+aiPct+' / 100</span></div>'+'<div class="tc-track"><div class="tc-fill" style="width:'+aiPct+'%;background:'+(aiPct>=90?'#ef4444':aiPct>=50?'#f59e0b':'#22c55e')+'"></div></div>';
-  if(!isAudio){bars+='<div class="tc-bar-row" style="margin-top:10px"><span>Deepfake</span><span class="tc-bar-val">'+dfPct+' / 100</span></div>'+'<div class="tc-track"><div class="tc-fill" style="width:'+dfPct+'%;background:'+(dfPct>=50?'#ef4444':'#22c55e')+'"></div></div>';}
-  grid.innerHTML='<div class="tool-card" style="grid-column:1/-1;border-left:3px solid '+C+'">'+'<div class="tc-header"><div><div class="tc-name">'+engineName+'</div><div class="tc-type">'+engineType+'</div></div>'+'<span class="tc-badge" style="background:rgba('+rgb+',.15);color:'+C+'">'+(flagged?'FLAGGED':'CLEAR')+'</span></div>'+bars+'<div class="tc-desc">Live result from the '+(isAudio?'Resemble':'Hive')+' detection model. Other engines shown during the scan are not yet connected.</div></div>';
-  anomCount.textContent=flagged?'1 finding · 1 Critical':'No anomalies above threshold';
-  anom.innerHTML=flagged?'<div class="anom-item"><div class="anom-sev-wrap"><span class="ap" style="background:rgba(239,68,68,.15);color:#ef4444">CRITICAL</span></div><div><div class="anom-body-name">'+(isAudio?'Synthetic voice signature detected':'AI-generation signature detected')+'</div><div class="anom-body-desc">'+(isAudio?('Resemble confidence '+aiPct+'% synthetic voice.'):('Hive confidence '+aiPct+'% AI-generated'+(dfPct>=50?', '+dfPct+'% deepfake':'')+'.'))+'</div><div class="anom-body-tool">'+engineSlug+'</div></div></div>':'<div style="padding:14px 16px;color:var(--muted);font-size:12px">No synthetic-media indicators above threshold.</div>';
-}
-// generateReport is now defined above in the Reports section
-async function saveCase(){const c=document.getElementById('nc-client').value||'Unknown Client',r=document.getElementById('nc-ref').value,u=document.getElementById('nc-urgency').value.split(' — ')[0],type=document.getElementById('nc-type').value,date='Jun '+new Date().getDate()+' 2026';const vd=currentResult&&currentResult.ok?currentResult.verdict:'INCONCLUSIVE',sc=currentResult&&currentResult.ok?currentResult.manipulation_score:0;const {error}=await sb.from('cases').insert({case_ref:r,client:c,type,verdict:vd,score:sc,status:'Complete',analyst:currentUser.name,urgency:u,date,file_path:currentUpload?currentUpload.path:null,file_hash:currentUpload?currentUpload.hash:null});if(error){alert('Could not save case: '+error.message);return;}cases.push({id:r,client:c,type,verdict:vd,score:sc,status:'Complete',analyst:currentUser.name,date,urgency:u});logActivity('Saved case '+r+' — '+c);document.getElementById('badge-cases').textContent=cases.length;renderDashboard();renderActivityLog();refreshCaseRef();alert('Case '+r+' saved to database.');}
-function resetNewCase(){
-  currentUpload=null;currentResult=null;analysisPromise=null;
-  document.getElementById('nc-drop').style.display='block';
-  document.getElementById('nc-file-info').classList.remove('show');
-  document.getElementById('nc-scan').classList.remove('show');
-  document.getElementById('nc-results').classList.remove('show');
-  document.getElementById('nc-prog').style.width='0%';document.getElementById('nc-pct').textContent='0%';
-  ['ts-hive','ts-sensity','ts-fake','ts-resemble','ts-ms'].forEach(id=>{const el=document.getElementById(id);el.textContent='Waiting...';el.className='tool-status ts-wait';});
-  document.getElementById('ts-human').textContent='Queued after automated analysis';
-  document.getElementById('nc-file').value='';document.getElementById('nc-client').value='';document.getElementById('nc-notes').value='';
-  refreshCaseRef();
-}
-
-// ── CASE DETAIL ──
-let currentCaseId=null,previousPage=null;
-
-function openCase(id){
-  const c=cases.find(x=>x.id===id);
-  if(!c)return;
-  currentCaseId=id;
-  const activePage=document.querySelector('.page.active');
-  previousPage=activePage?activePage.id.replace('page-',''):'cases';
-  document.getElementById('cd-ref').textContent=c.id;
-  document.getElementById('cd-client').textContent=c.client;
-  document.getElementById('cd-type').textContent=c.type;
-  document.getElementById('cd-analyst').textContent=c.analyst;
-  document.getElementById('cd-date').textContent=c.date;
-  document.getElementById('cd-urgency').textContent=c.urgency||'Standard';
-  const stag=document.getElementById('cd-status-tag');
-  stag.textContent=c.status;
-  stag.className='tag '+(c.status==='Complete'?'standard':c.status==='Reopened'?'urgent':'elevated');
-  const vColor={MANIPULATED:'var(--danger)',AUTHENTIC:'var(--success)',INCONCLUSIVE:'var(--warn)'}[c.verdict]||'var(--muted)';
-  document.getElementById('cd-verdict-text').textContent=c.verdict||'—';
-  document.getElementById('cd-verdict-text').style.color=vColor;
-  document.getElementById('cd-score-val').textContent=c.score!=null?c.score:'—';
-  document.getElementById('cd-score-val').style.color=c.score>75?'var(--danger)':c.score>40?'var(--warn)':'var(--success)';
-  document.getElementById('cd-detail-ref').textContent=c.id;
-  document.getElementById('cd-detail-client').textContent=c.client;
-  document.getElementById('cd-detail-type').textContent=c.type;
-  document.getElementById('cd-detail-urgency').textContent=c.urgency||'Standard';
-  document.getElementById('cd-detail-analyst').textContent=c.analyst;
-  document.getElementById('cd-detail-date').textContent=c.date;
-  document.getElementById('cd-detail-hash').textContent=c.file_hash||'Not recorded';
-  document.querySelectorAll('.cd-status-btn').forEach(btn=>{
-    btn.classList.remove('active-status');
-    if(btn.textContent.includes(c.status))btn.classList.add('active-status');
-  });
-  buildEnginePanel(c);
-  document.getElementById('cd-notes').value=c.notes||'';
-  document.getElementById('cd-save-msg').style.display='none';
-  loadCaseNotes(id);
-  buildCaseActivity(id);
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById('page-case-detail').classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-}
-
-function buildEnginePanel(c){
-  const body=document.getElementById('cd-engines-body');
-  const summary=document.getElementById('cd-engines-summary');
-  const score=c.score!=null?c.score:0;
-  const isAudio=c.type==='Audio';
-  const isImage=c.type==='Image';
-  const engines=[];
-  if(!isAudio){engines.push({icon:'🔵',name:'Hive Moderation',sub:'AI-Generated & Deepfake Detection',score:score,flagged:score>=50});}
-  if(isAudio){engines.push({icon:'🟠',name:'Resemble Detect',sub:'Synthetic Voice & Audio',score:score,flagged:score>=50});}
-  engines.push({icon:'🟣',name:'Reality Defender',sub:'Multi-modal · Coming Soon',score:null,pending:true});
-  const flaggedCount=engines.filter(e=>e.flagged).length;
-  const liveCount=engines.filter(e=>!e.pending).length;
-  summary.textContent=flaggedCount+' of '+liveCount+' live engines flagged';
-  body.innerHTML=engines.map(e=>{
+  // Build engine rows HTML
+  const enginesHtml=engines.map(e=>{
     const sc=e.score!=null?e.score:null;
-    const col=sc!=null?(sc>=75?'#ef4444':sc>=50?'#f59e0b':'#22c55e'):'var(--muted)';
+    const barColor=sc!=null?(sc>=75?'#DC2626':sc>=50?'#D97706':'#16A34A'):'#CBD5E1';
     const badgeTxt=e.pending?'PENDING':e.flagged?'FLAGGED':'CLEAR';
-    const badgeBg=e.pending?'rgba(122,149,184,.15)':e.flagged?'rgba(239,68,68,.15)':'rgba(52,211,153,.15)';
-    const badgeCol=e.pending?'var(--muted)':e.flagged?'var(--danger)':'var(--success)';
-    return '<div class="cd-engine-row"><div class="cd-engine-icon">'+e.icon+'</div><div style="flex:1"><div class="cd-engine-name">'+e.name+'</div><div class="cd-engine-sub">'+e.sub+'</div></div>'+(sc!=null?'<div class="cd-engine-score"><div class="cd-engine-score-val" style="color:'+col+'">'+sc+'</div><div class="cd-engine-score-bar"><div class="cd-engine-score-fill" style="width:'+sc+'%;background:'+col+'"></div></div></div>':'')+'<span style="margin-left:10px;font-size:9px;font-weight:700;padding:3px 8px;border-radius:3px;background:'+badgeBg+';color:'+badgeCol+';letter-spacing:.5px">'+badgeTxt+'</span></div>';
+    const badgeBg=e.pending?'#E5EAF3':e.flagged?'#FEE2E2':'#DCFCE7';
+    const badgeCol=e.pending?'#8A9BB0':e.flagged?'#DC2626':'#16A34A';
+    return '<div class="pr-engine-row">'+
+      '<div style="flex:1"><div class="pr-engine-name">'+e.name+'</div><div class="pr-engine-sub">'+e.sub+'</div></div>'+
+      (sc!=null?'<div class="pr-bar-wrap"><div style="font-size:11px;font-weight:700;color:'+barColor+'">'+sc+' / 100</div><div class="pr-bar-track"><div class="pr-bar-fill" style="width:'+sc+'%;background:'+barColor+'"></div></div></div>':'') +
+      '<span class="pr-badge" style="background:'+badgeBg+';color:'+badgeCol+'">'+badgeTxt+'</span>'+
+    '</div>';
   }).join('');
+
+  // Build activity log HTML
+  const actHtml=caseActivity.length?caseActivity.slice().reverse().map(a=>
+    '<div class="pr-alog-row"><div class="pr-alog-user">'+a.user+'</div><div class="pr-alog-action">'+a.action+'</div><div class="pr-alog-time">'+a.time+'</div></div>'
+  ).join(''):'<div style="font-size:10px;color:#8A9BB0;padding:8px 0">No activity recorded.</div>';
+
+  // Client logo HTML
+  const logoHtml=reportLogoDataUrl?
+    '<img class="pr-client-logo" src="'+reportLogoDataUrl+'"/><div class="pr-client-divider"></div>':
+    '';
+
+  // Build the full print HTML
+  const html=`
+    <div class="pr-page">
+      <div class="pr-header">
+        <div>
+          <div class="pr-logo-word">REVLAR</div>
+          <div class="pr-logo-sub">AI MEDIA INVESTIGATION PLATFORM</div>
+        </div>
+        <div class="pr-report-id">
+          <div style="font-size:11px;font-weight:700;color:#fff;margin-bottom:3px">${reportId}</div>
+          <div>Generated: ${generatedAt}</div>
+          <div style="margin-top:2px">CONFIDENTIAL</div>
+        </div>
+      </div>
+      <div class="pr-accent"></div>
+      <div class="pr-body">
+
+        <!-- Client + Revlar branding -->
+        <div class="pr-client-row">
+          ${logoHtml}
+          <div>
+            <div class="pr-revlar-tag">Verified by</div>
+            <div class="pr-revlar-name">Revlar AI Media Investigation Platform</div>
+          </div>
+        </div>
+
+        <!-- Verdict hero -->
+        <div class="pr-verdict-box">
+          <div>
+            <div class="pr-verdict-label">Verification Verdict</div>
+            <div class="pr-verdict-text" style="color:${vColor}">${c.verdict}</div>
+            <div style="font-size:11px;color:#8A9BB0;margin-top:4px">${
+              c.verdict==='MANIPULATED'?'AI-generation or deepfake signatures detected.':
+              c.verdict==='AUTHENTIC'?'No synthetic media signatures detected.':
+              'Borderline result — analyst review recommended.'
+            }</div>
+          </div>
+          <div class="pr-score-circle" style="color:${vColor}">
+            <div class="pr-score-num" style="color:${vColor}">${c.score||0}</div>
+            <div class="pr-score-sub">/ 100</div>
+          </div>
+        </div>
+
+        <!-- Case metadata -->
+        <div class="pr-section-title">Case Information</div>
+        <div class="pr-divider"></div>
+        <div class="pr-meta-grid">
+          <div><div class="pr-meta-field-label">Case Reference</div><div class="pr-meta-field-val" style="color:#2A7AE4;font-family:monospace">${c.id}</div></div>
+          <div><div class="pr-meta-field-label">Client / Matter</div><div class="pr-meta-field-val">${c.client}</div></div>
+          <div><div class="pr-meta-field-label">Content Type</div><div class="pr-meta-field-val">${c.type}</div></div>
+          <div><div class="pr-meta-field-label">Urgency</div><div class="pr-meta-field-val">${c.urgency||'Standard'}</div></div>
+          <div><div class="pr-meta-field-label">Assigned Analyst</div><div class="pr-meta-field-val">${c.analyst}</div></div>
+          <div><div class="pr-meta-field-label">Submission Date</div><div class="pr-meta-field-val">${c.date}</div></div>
+          <div><div class="pr-meta-field-label">Report Generated</div><div class="pr-meta-field-val">${generatedAt}</div></div>
+          <div><div class="pr-meta-field-label">Report ID</div><div class="pr-meta-field-val" style="font-family:monospace">${reportId}</div></div>
+        </div>
+        ${c.file_hash?'<div class="pr-meta-field-label">File Integrity — SHA-256</div><div class="pr-hash">'+c.file_hash+'</div>':''}
+
+        <!-- Detection engines -->
+        <div class="pr-section-title">Detection Engines</div>
+        <div class="pr-divider"></div>
+        ${enginesHtml}
+
+        ${notes&&notes.trim()?'<div class="pr-section-title">Analyst Notes</div><div class="pr-divider"></div><div class="pr-notes">'+notes.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>':''}
+
+        <!-- Chain of custody -->
+        <div class="pr-section-title">Chain of Custody — Activity Log</div>
+        <div class="pr-divider"></div>
+        ${actHtml}
+
+        <!-- Disclaimer -->
+        <div class="pr-disclaimer">
+          <strong>LEGAL DISCLAIMER</strong><br/>
+          This report has been generated by Revlar AI Media Investigation Platform and is intended for use by the authorized recipient only. The findings contained herein are based on automated analysis performed by third-party detection engines including Hive Moderation API and Resemble Detect. Revlar does not guarantee the absolute accuracy of detection results. This report does not constitute legal advice and should be reviewed by a qualified professional before being used as evidence in any legal, regulatory, or judicial proceeding. Unauthorized disclosure, reproduction, or distribution of this report is strictly prohibited.
+        </div>
+
+      </div>
+      <div class="pr-footer">
+        <span>REVLAR · AI Media Investigation Platform · Confidential</span>
+        <span>${reportId}</span>
+        <span>Generated ${generatedAt}</span>
+      </div>
+    </div>
+  `;
+
+  // Inject into print div and trigger print
+  const el=document.getElementById('print-report');
+  el.innerHTML=html;
+
+  // Small delay then print
+  setTimeout(()=>{
+    window.print();
+    logActivity('Generated report '+reportId+' for case '+caseId);
+    renderActivityLog();
+    if(currentCaseId===caseId)buildCaseActivity(caseId);
+  },150);
+
 }
 
-function buildCaseActivity(id){
-  const body=document.getElementById('cd-activity-body');
-  const related=activityLog.filter(a=>a.action&&a.action.includes(id));
-  if(!related.length){body.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:12px">No activity recorded for this case yet.</div>';return;}
-  body.innerHTML=related.slice().reverse().map(a=>{
-    const u=USERS[a.user==='Founder'?'founder':'cofounder'];
-    return '<div class="cd-alog-item"><div class="cd-alog-dot" style="background:'+u.color+'">'+u.initials+'</div><div><div class="cd-alog-action">'+a.action+'</div><div class="cd-alog-time">'+a.time+'</div></div></div>';
-  }).join('');
-}
-
-async function loadCaseNotes(id){
-  try{
-    const {data,error}=await sb.from('cases').select('notes').eq('case_ref',id).single();
-    if(!error&&data&&data.notes){document.getElementById('cd-notes').value=data.notes;const c=cases.find(x=>x.id===id);if(c)c.notes=data.notes;}
-  }catch(e){console.error('loadCaseNotes',e);}
-}
-
-async function saveCaseNotes(){
-  if(!currentCaseId)return;
-  const notes=document.getElementById('cd-notes').value;
-  const msg=document.getElementById('cd-save-msg');
-  const {error}=await sb.from('cases').update({notes}).eq('case_ref',currentCaseId);
-  if(error){alert('Could not save notes: '+error.message);return;}
-  const c=cases.find(x=>x.id===currentCaseId);if(c)c.notes=notes;
-  logActivity('Updated notes on '+currentCaseId);
-  buildCaseActivity(currentCaseId);
-  msg.style.display='inline';
-  setTimeout(()=>{msg.style.display='none';},2500);
-}
-
-async function setCaseStatus(status){
-  if(!currentCaseId)return;
-  const {error}=await sb.from('cases').update({status}).eq('case_ref',currentCaseId);
-  if(error){alert('Could not update status: '+error.message);return;}
-  const c=cases.find(x=>x.id===currentCaseId);if(c)c.status=status;
-  const stag=document.getElementById('cd-status-tag');
-  stag.textContent=status;
-  stag.className='tag '+(status==='Complete'?'standard':status==='Reopened'?'urgent':'elevated');
-  document.querySelectorAll('.cd-status-btn').forEach(btn=>{
-    btn.classList.remove('active-status');
-    if(btn.textContent.includes(status))btn.classList.add('active-status');
-  });
-  logActivity('Changed status of '+currentCaseId+' to '+status);
-  buildCaseActivity(currentCaseId);
-  renderDashboard();renderAllCases(cases);
-}
-
-function closeCaseDetail(){
-  currentCaseId=null;
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  const target=previousPage||'cases';
-  document.getElementById('page-'+target).classList.add('active');
-  if(target==='cases')renderAllCases(cases);
-  if(target==='dashboard')renderDashboard();
-}
 
 // ── SESSION RESTORE ── keeps the user signed in across page refreshes
 (async()=>{
