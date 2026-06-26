@@ -429,13 +429,13 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
           <div class="tool-row"><div class="tool-icon">👤</div><div class="tool-name">Human Expert Review</div><div class="tool-status ts-wait" id="ts-human">Queued after automated analysis</div></div>
         </div>
         <div class="results-panel" id="nc-results">
-          <div class="verdict-banner vb-manip">
-            <div><div class="vb-label">Verification Verdict</div><div class="vb-verdict vb-m">MANIPULATED</div><div class="vb-sub">High confidence — 5 of 5 engines flagged content as synthetic</div></div>
-            <div class="vb-score"><div class="vb-score-num">82</div><div class="vb-score-lbl">/ 100 Confidence</div></div>
+          <div class="verdict-banner vb-manip" id="nc-verdict-banner">
+            <div><div class="vb-label">Verification Verdict</div><div class="vb-verdict vb-m" id="nc-verdict-text">MANIPULATED</div><div class="vb-sub" id="nc-verdict-sub">High confidence — 5 of 5 engines flagged content as synthetic</div></div>
+            <div class="vb-score"><div class="vb-score-num" id="nc-score-num">82</div><div class="vb-score-lbl">/ 100 Confidence</div></div>
             <div class="vb-analyst"><div class="vb-analyst-lbl">Analysed By</div><div class="vb-analyst-name" id="nc-analyst-display"></div><div class="vb-analyst-time" id="nc-time-display"></div></div>
           </div>
           <div class="tools-grid" id="nc-tools-grid"></div>
-          <div class="anom-list"><div class="anom-list-header"><div class="anom-list-title">Detected Anomalies</div><div class="anom-list-count">5 findings · 4 Critical · 1 Warning</div></div><div id="nc-anom-body"></div></div>
+          <div class="anom-list"><div class="anom-list-header"><div class="anom-list-title">Detected Anomalies</div><div class="anom-list-count" id="nc-anom-count">5 findings · 4 Critical · 1 Warning</div></div><div id="nc-anom-body"></div></div>
           <div class="result-actions">
             <button class="btn btn-primary" onclick="generateReport()">📄 Generate Report</button>
             <button class="btn btn-secondary" onclick="saveCase()">💾 Save Case</button>
@@ -800,7 +800,7 @@ function fakeHash(){let h='';const c='abcdef0123456789';for(let i=0;i<40;i++)h+=
 function ncDrag(e){e.preventDefault();document.getElementById('nc-drop').classList.add('drag');}
 function ncDragLeave(){document.getElementById('nc-drop').classList.remove('drag');}
 function ncDrop(e){e.preventDefault();ncDragLeave();const f=e.dataTransfer.files[0];if(f)ncHandleFile(f);}
-let currentUpload=null;
+let currentUpload=null,analysisPromise=null,currentResult=null;
 async function ncHandleFile(file){
   if(!file)return;
   currentUpload=null;
@@ -826,7 +826,16 @@ async function ncHandleFile(file){
   const {data,error}=await sb.storage.from('case-files').upload(path,file,{upsert:false});
   if(error){console.error('upload failed',error);document.getElementById('nc-fi-meta').textContent=fmtSize(file.size)+' · Received '+recv+' · ⚠ upload failed: '+error.message;}
   else{currentUpload={path:data.path,hash:hashHex};}
+  // Kick off the REAL Hive analysis now; it runs while the scan animation plays.
+  analysisPromise=currentUpload?analyzeFile(document.getElementById('nc-ref').value,currentUpload.path):Promise.resolve({error:'upload failed'});
   setTimeout(()=>startScan(),600);
+}
+async function analyzeFile(caseRef,filePath){
+  try{
+    const {data,error}=await sb.functions.invoke('super-api',{body:{case_ref:caseRef,file_path:filePath}});
+    if(error)return {error:error.message||String(error)};
+    return data;
+  }catch(e){return {error:String(e)};}
 }
 const TR=[
   {name:'Hive Moderation API',type:'AI-Generated Content',score:89,fill:'fill-r',desc:'GAN artefacts across 2,847 frames. Synthetic face flagged at 94.3% confidence.'},
@@ -851,17 +860,58 @@ function startScan(){
   });
   setTimeout(()=>{document.getElementById('ts-human').textContent='⏳ Pending analyst sign-off';document.getElementById('nc-scan').classList.remove('show');showResults();},4800);
 }
-function showResults(){
+async function showResults(){
   document.getElementById('nc-results').classList.add('show');
   document.getElementById('nc-analyst-display').textContent=currentUser.name;
   document.getElementById('nc-time-display').textContent=new Date().toISOString().replace('T',' ').slice(0,19)+' UTC';
-  document.getElementById('nc-tools-grid').innerHTML=TR.map((t,i)=>`<div class="tool-card flagged" ${i===4?'style="grid-column:1/-1"':''}><div class="tc-header"><div><div class="tc-name">${t.name}</div><div class="tc-type">${t.type}</div></div><span class="tc-badge tb-m">FLAGGED</span></div><div class="tc-bar-row"><span>Confidence</span><span class="tc-bar-val">${t.score} / 100</span></div><div class="tc-track"><div class="tc-fill ${t.fill}" style="width:${t.score}%"></div></div><div class="tc-desc">${t.desc}</div></div>`).join('');
-  document.getElementById('nc-anom-body').innerHTML=AN.map(a=>`<div class="anom-item"><div class="anom-sev-wrap"><span class="ap ${a.cls}">${a.sev}</span><div class="anom-ts">${a.time}</div></div><div><div class="anom-body-name">${a.name}</div><div class="anom-body-desc">${a.desc}</div><div class="anom-body-tool">${a.tool}</div></div></div>`).join('');
+  const res=analysisPromise?await analysisPromise:{error:'analysis did not start'};
+  currentResult=res;
+  applyVerdict(res);
+}
+function applyVerdict(res){
+  const banner=document.getElementById('nc-verdict-banner');
+  const vEl=document.getElementById('nc-verdict-text');
+  const sNum=document.getElementById('nc-score-num');
+  const sub=document.getElementById('nc-verdict-sub');
+  const grid=document.getElementById('nc-tools-grid');
+  const anomCount=document.getElementById('nc-anom-count');
+  const anom=document.getElementById('nc-anom-body');
+  if(!res||!res.ok){
+    const msg=(res&&res.error)?res.error:'Analysis did not complete';
+    banner.style.background='rgba(245,158,11,.07)';banner.style.border='1px solid rgba(245,158,11,.3)';
+    vEl.textContent='ERROR';vEl.style.color='#f59e0b';
+    sNum.textContent='—';
+    sub.textContent='Could not analyze file: '+msg;
+    grid.innerHTML='';anomCount.textContent='';anom.innerHTML='';
+    return;
+  }
+  const verdict=res.verdict||'INCONCLUSIVE';
+  const score=res.manipulation_score!=null?res.manipulation_score:0;
+  const aiPct=Math.round((res.ai_generated||0)*100);
+  const dfPct=Math.round((res.deepfake||0)*100);
+  const C={MANIPULATED:'#ef4444',AUTHENTIC:'#22c55e',INCONCLUSIVE:'#f59e0b'}[verdict]||'#f59e0b';
+  const rgb={MANIPULATED:'239,68,68',AUTHENTIC:'34,197,94',INCONCLUSIVE:'245,158,11'}[verdict]||'245,158,11';
+  banner.style.background='rgba('+rgb+',.07)';
+  banner.style.border='1px solid rgba('+rgb+',.3)';
+  vEl.textContent=verdict;vEl.style.color=C;
+  sNum.textContent=score;
+  sub.textContent=verdict==='MANIPULATED'?'Hive flagged AI-generation or deepfake signatures':verdict==='AUTHENTIC'?'No AI-generation or deepfake signatures detected':'Borderline result — analyst review recommended';
+  const flagged=verdict==='MANIPULATED';
+  grid.innerHTML='<div class="tool-card" style="grid-column:1/-1;border-left:3px solid '+C+'">'+
+    '<div class="tc-header"><div><div class="tc-name">Hive AI-Generated &amp; Deepfake Detection</div><div class="tc-type">Live API · v3</div></div>'+
+    '<span class="tc-badge" style="background:rgba('+rgb+',.15);color:'+C+'">'+(flagged?'FLAGGED':'CLEAR')+'</span></div>'+
+    '<div class="tc-bar-row"><span>AI-Generated</span><span class="tc-bar-val">'+aiPct+' / 100</span></div>'+
+    '<div class="tc-track"><div class="tc-fill" style="width:'+aiPct+'%;background:'+(aiPct>=90?'#ef4444':aiPct>=50?'#f59e0b':'#22c55e')+'"></div></div>'+
+    '<div class="tc-bar-row" style="margin-top:10px"><span>Deepfake</span><span class="tc-bar-val">'+dfPct+' / 100</span></div>'+
+    '<div class="tc-track"><div class="tc-fill" style="width:'+dfPct+'%;background:'+(dfPct>=50?'#ef4444':'#22c55e')+'"></div></div>'+
+    '<div class="tc-desc">Live result from the Hive detection model. Other engines shown during the scan are not yet connected.</div></div>';
+  anomCount.textContent=flagged?'1 finding · 1 Critical':'No anomalies above threshold';
+  anom.innerHTML=flagged?'<div class="anom-item"><div class="anom-sev-wrap"><span class="ap" style="background:rgba(239,68,68,.15);color:#ef4444">CRITICAL</span></div><div><div class="anom-body-name">AI-generation signature detected</div><div class="anom-body-desc">Hive confidence '+aiPct+'% AI-generated'+(dfPct>=50?', '+dfPct+'% deepfake':'')+'.</div><div class="anom-body-tool">Hive · ai-generated-and-deepfake-content-detection</div></div></div>':'<div style="padding:14px 16px;color:var(--muted);font-size:12px">No synthetic-media indicators above threshold.</div>';
 }
 function generateReport(){const c=document.getElementById('nc-client').value||'Unknown Client',r=document.getElementById('nc-ref').value;alert('Report '+r+' for '+c+'\nSigned by: '+currentUser.name+' ('+currentUser.role+')\n\nPDF generation goes live once the backend API is connected.');logActivity('Generated report '+r+' for '+c);renderActivityLog();}
-async function saveCase(){const c=document.getElementById('nc-client').value||'Unknown Client',r=document.getElementById('nc-ref').value,u=document.getElementById('nc-urgency').value.split(' — ')[0],type=document.getElementById('nc-type').value,date='Jun '+new Date().getDate()+' 2026';const {error}=await sb.from('cases').insert({case_ref:r,client:c,type,verdict:'MANIPULATED',score:82,status:'Complete',analyst:currentUser.name,urgency:u,date,file_path:currentUpload?currentUpload.path:null,file_hash:currentUpload?currentUpload.hash:null});if(error){alert('Could not save case: '+error.message);return;}cases.push({id:r,client:c,type,verdict:'MANIPULATED',score:82,status:'Complete',analyst:currentUser.name,date,urgency:u});logActivity('Saved case '+r+' — '+c);document.getElementById('badge-cases').textContent=cases.length;renderDashboard();renderActivityLog();refreshCaseRef();alert('Case '+r+' saved to database.');}
+async function saveCase(){const c=document.getElementById('nc-client').value||'Unknown Client',r=document.getElementById('nc-ref').value,u=document.getElementById('nc-urgency').value.split(' — ')[0],type=document.getElementById('nc-type').value,date='Jun '+new Date().getDate()+' 2026';const vd=currentResult&&currentResult.ok?currentResult.verdict:'INCONCLUSIVE',sc=currentResult&&currentResult.ok?currentResult.manipulation_score:0;const {error}=await sb.from('cases').insert({case_ref:r,client:c,type,verdict:vd,score:sc,status:'Complete',analyst:currentUser.name,urgency:u,date,file_path:currentUpload?currentUpload.path:null,file_hash:currentUpload?currentUpload.hash:null});if(error){alert('Could not save case: '+error.message);return;}cases.push({id:r,client:c,type,verdict:vd,score:sc,status:'Complete',analyst:currentUser.name,date,urgency:u});logActivity('Saved case '+r+' — '+c);document.getElementById('badge-cases').textContent=cases.length;renderDashboard();renderActivityLog();refreshCaseRef();alert('Case '+r+' saved to database.');}
 function resetNewCase(){
-  currentUpload=null;
+  currentUpload=null;currentResult=null;analysisPromise=null;
   document.getElementById('nc-drop').style.display='block';
   document.getElementById('nc-file-info').classList.remove('show');
   document.getElementById('nc-scan').classList.remove('show');
