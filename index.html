@@ -3,7 +3,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@500,600,700,800,900&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 /* DARK MODE (default) */
@@ -971,7 +971,7 @@ async function generateReport(caseId){
     if(data&&data.notes)notes=data.notes;
   }catch(e){}
 
-  const {jsPDF}=window.jspdf;
+  const jsPDF=window.jspdf&&window.jspdf.jsPDF?window.jspdf.jsPDF:(window.jsPDF||null);if(!jsPDF){alert("PDF library not loaded. Please refresh the page and try again.");return;}
   const doc=new jsPDF({orientation:'portrait',unit:'pt',format:'letter'});
   const PW=612,PH=792;
   const NAVY='#0D1B2A',ACCENT='#2A7AE4',LIGHT='#F0F4FA',MID='#8A9BB0',TEXT='#1C2B3A';
