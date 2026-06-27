@@ -64,8 +64,7 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
 .t-role{font-size:10px;color:var(--muted)}
 .t-logout{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--muted);font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
 .t-logout:hover{border-color:var(--danger);color:var(--danger)}
-.t-notif{position:relative;cursor:pointer;font-size:18px}
-.t-notif-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:var(--danger);border:2px solid var(--surface)}
+
 .body-layout{display:flex;flex:1;overflow:hidden}
 
 /* ── SIDEBAR ── */
@@ -418,7 +417,7 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
       <div class="theme-toggle" onclick="toggleTheme()" title="Toggle light / dark">
         <div class="theme-toggle-knob" id="theme-knob">🌙</div>
       </div>
-      <div class="t-notif">🔔<div class="t-notif-dot"></div></div>
+      
       <div class="t-user">
         <div class="t-avatar" id="topbar-avatar"></div>
         <div><div class="t-uname" id="topbar-name"></div><div class="t-role" id="topbar-role"></div></div>
@@ -559,21 +558,7 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--base);colo
         <div class="page-header">
           <div><div class="page-title">Reports</div><div class="page-sub">Generate and download signed verification reports for completed cases.</div></div>
         </div>
-        <div class="card" style="margin-bottom:16px">
-          <div class="card-header">
-            <div class="card-title">Client Logo (Optional)</div>
-            <span style="font-size:11px;color:var(--muted)">Appears on the report alongside Revlar branding</span>
-          </div>
-          <div class="card-body" style="display:flex;align-items:center;gap:16px">
-            <div id="rpt-logo-preview" style="width:80px;height:48px;background:var(--card);border:1px dashed var(--border);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);overflow:hidden;flex-shrink:0">No logo</div>
-            <div>
-              <button class="btn btn-secondary" style="font-size:11px" onclick="document.getElementById(&apos;rpt-logo-input&apos;).click()">📎 Upload Logo</button>
-              <button class="btn btn-secondary" id="rpt-logo-clear" onclick="clearReportLogo()" style="font-size:11px;margin-left:8px;display:none">✕ Remove</button>
-              <div style="font-size:11px;color:var(--muted);margin-top:6px">PNG or JPG · Scaled to fit the report header</div>
-            </div>
-            <input type="file" id="rpt-logo-input" accept="image/*" style="display:none" onchange="handleReportLogo(this.files[0])"/>
-          </div>
-        </div>
+
         <div class="card">
           <div class="card-header"><div class="card-title">Completed Cases — Ready for Report</div></div>
           <div style="padding:0"><table class="activity-table" id="reports-table"></table></div>
@@ -1010,147 +995,76 @@ function clearReportLogo(){
 
 // ── GENERATE REPORT PDF ──
 async function generateReport(caseId){
+  if(!caseId){alert('No case selected.');return;}
   const c=cases.find(x=>x.id===caseId);
   if(!c){alert('Case not found.');return;}
 
-  // Fetch latest notes
+  // Fetch latest notes from Supabase
   let notes=c.notes||'';
-  try{const {data}=await sb.from('cases').select('notes').eq('case_ref',caseId).single();if(data&&data.notes)notes=data.notes;}catch(e){}
+  try{
+    const {data}=await sb.from('cases').select('notes').eq('case_ref',caseId).single();
+    if(data&&data.notes)notes=data.notes;
+  }catch(e){}
 
-  const generatedAt=new Date().toISOString().replace('T',' ').slice(0,19)+' UTC';
-  const reportId='RPT-'+caseId+'-'+Date.now().toString().slice(-6);
-  const vColor={MANIPULATED:'#DC2626',AUTHENTIC:'#16A34A',INCONCLUSIVE:'#D97706'}[c.verdict]||'#6B7280';
-  const isAudio=c.type==='Audio';
-  const caseActivity=activityLog.filter(a=>a.action&&a.action.includes(caseId));
+  // Build activity array for this case
+  const activity=activityLog
+    .filter(a=>a.action&&a.action.includes(caseId))
+    .map(a=>({user:a.user,action:a.action,time:a.time}));
 
-  // Build engines list
-  const engines=[];
-  if(!isAudio){engines.push({name:'Hive Moderation',sub:'AI-Generated & Deepfake Detection · Live API v3',score:c.score,flagged:c.verdict==='MANIPULATED'});}
-  if(isAudio){engines.push({name:'Resemble Detect',sub:'Synthetic Voice & Audio · Live API v2',score:c.score,flagged:c.verdict==='MANIPULATED'});}
-  engines.push({name:'Reality Defender',sub:'Multi-modal Ensemble · Integration Pending',score:null,pending:true});
-  engines.push({name:'Sensity AI',sub:'Forensic Analysis · Integration Planned',score:null,pending:true});
+  // Show loading state on the button
+  const btns=document.querySelectorAll(`[onclick*="generateReport('${caseId}')"]`);
+  btns.forEach(b=>{b.textContent='Generating...';b.disabled=true;});
 
-  // Build engine rows HTML
-  const enginesHtml=engines.map(e=>{
-    const sc=e.score!=null?e.score:null;
-    const barColor=sc!=null?(sc>=75?'#DC2626':sc>=50?'#D97706':'#16A34A'):'#CBD5E1';
-    const badgeTxt=e.pending?'PENDING':e.flagged?'FLAGGED':'CLEAR';
-    const badgeBg=e.pending?'#E5EAF3':e.flagged?'#FEE2E2':'#DCFCE7';
-    const badgeCol=e.pending?'#8A9BB0':e.flagged?'#DC2626':'#16A34A';
-    return '<div class="pr-engine-row">'+
-      '<div style="flex:1"><div class="pr-engine-name">'+e.name+'</div><div class="pr-engine-sub">'+e.sub+'</div></div>'+
-      (sc!=null?'<div class="pr-bar-wrap"><div style="font-size:11px;font-weight:700;color:'+barColor+'">'+sc+' / 100</div><div class="pr-bar-track"><div class="pr-bar-fill" style="width:'+sc+'%;background:'+barColor+'"></div></div></div>':'') +
-      '<span class="pr-badge" style="background:'+badgeBg+';color:'+badgeCol+'">'+badgeTxt+'</span>'+
-    '</div>';
-  }).join('');
+  try{
+    const res=await fetch(`${SUPABASE_URL}/functions/v1/generate-report`,{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':`Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+      },
+      body:JSON.stringify({
+        case:{
+          id:c.id,
+          client:c.client,
+          type:c.type,
+          urgency:c.urgency||'Standard',
+          analyst:c.analyst,
+          date:c.date,
+          verdict:c.verdict,
+          score:c.score,
+          file_hash:c.file_hash||null,
+          notes:notes,
+          activity:activity,
+        }
+      })
+    });
 
-  // Build activity log HTML
-  const actHtml=caseActivity.length?caseActivity.slice().reverse().map(a=>
-    '<div class="pr-alog-row"><div class="pr-alog-user">'+a.user+'</div><div class="pr-alog-action">'+a.action+'</div><div class="pr-alog-time">'+a.time+'</div></div>'
-  ).join(''):'<div style="font-size:10px;color:#8A9BB0;padding:8px 0">No activity recorded.</div>';
+    if(!res.ok){
+      const err=await res.text();
+      throw new Error('Edge Function error: '+err);
+    }
 
-  // Client logo HTML
-  const logoHtml=reportLogoDataUrl?
-    '<img class="pr-client-logo" src="'+reportLogoDataUrl+'"/><div class="pr-client-divider"></div>':
-    '';
+    // Trigger download
+    const blob=await res.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=`RPT-${caseId}-${Date.now().toString().slice(-6)}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 
-  // Build the full print HTML
-  const html=`
-    <div class="pr-page">
-      <div class="pr-header">
-        <div>
-          <div class="pr-logo-word">REVLAR</div>
-          <div class="pr-logo-sub">AI MEDIA INVESTIGATION PLATFORM</div>
-        </div>
-        <div class="pr-report-id">
-          <div style="font-size:11px;font-weight:700;color:#fff;margin-bottom:3px">${reportId}</div>
-          <div>Generated: ${generatedAt}</div>
-          <div style="margin-top:2px">CONFIDENTIAL</div>
-        </div>
-      </div>
-      <div class="pr-accent"></div>
-      <div class="pr-body">
-
-        <!-- Client + Revlar branding -->
-        <div class="pr-client-row">
-          ${logoHtml}
-          <div>
-            <div class="pr-revlar-tag">Verified by</div>
-            <div class="pr-revlar-name">Revlar AI Media Investigation Platform</div>
-          </div>
-        </div>
-
-        <!-- Verdict hero -->
-        <div class="pr-verdict-box">
-          <div>
-            <div class="pr-verdict-label">Verification Verdict</div>
-            <div class="pr-verdict-text" style="color:${vColor}">${c.verdict}</div>
-            <div style="font-size:11px;color:#8A9BB0;margin-top:4px">${
-              c.verdict==='MANIPULATED'?'AI-generation or deepfake signatures detected.':
-              c.verdict==='AUTHENTIC'?'No synthetic media signatures detected.':
-              'Borderline result — analyst review recommended.'
-            }</div>
-          </div>
-          <div class="pr-score-circle" style="color:${vColor}">
-            <div class="pr-score-num" style="color:${vColor}">${c.score||0}</div>
-            <div class="pr-score-sub">/ 100</div>
-          </div>
-        </div>
-
-        <!-- Case metadata -->
-        <div class="pr-section-title">Case Information</div>
-        <div class="pr-divider"></div>
-        <div class="pr-meta-grid">
-          <div><div class="pr-meta-field-label">Case Reference</div><div class="pr-meta-field-val" style="color:#2A7AE4;font-family:monospace">${c.id}</div></div>
-          <div><div class="pr-meta-field-label">Client / Matter</div><div class="pr-meta-field-val">${c.client}</div></div>
-          <div><div class="pr-meta-field-label">Content Type</div><div class="pr-meta-field-val">${c.type}</div></div>
-          <div><div class="pr-meta-field-label">Urgency</div><div class="pr-meta-field-val">${c.urgency||'Standard'}</div></div>
-          <div><div class="pr-meta-field-label">Assigned Analyst</div><div class="pr-meta-field-val">${c.analyst}</div></div>
-          <div><div class="pr-meta-field-label">Submission Date</div><div class="pr-meta-field-val">${c.date}</div></div>
-          <div><div class="pr-meta-field-label">Report Generated</div><div class="pr-meta-field-val">${generatedAt}</div></div>
-          <div><div class="pr-meta-field-label">Report ID</div><div class="pr-meta-field-val" style="font-family:monospace">${reportId}</div></div>
-        </div>
-        ${c.file_hash?'<div class="pr-meta-field-label">File Integrity — SHA-256</div><div class="pr-hash">'+c.file_hash+'</div>':''}
-
-        <!-- Detection engines -->
-        <div class="pr-section-title">Detection Engines</div>
-        <div class="pr-divider"></div>
-        ${enginesHtml}
-
-        ${notes&&notes.trim()?'<div class="pr-section-title">Analyst Notes</div><div class="pr-divider"></div><div class="pr-notes">'+notes.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>':''}
-
-        <!-- Chain of custody -->
-        <div class="pr-section-title">Chain of Custody — Activity Log</div>
-        <div class="pr-divider"></div>
-        ${actHtml}
-
-        <!-- Disclaimer -->
-        <div class="pr-disclaimer">
-          <strong>LEGAL DISCLAIMER</strong><br/>
-          This report has been generated by Revlar AI Media Investigation Platform and is intended for use by the authorized recipient only. The findings contained herein are based on automated analysis performed by third-party detection engines including Hive Moderation API and Resemble Detect. Revlar does not guarantee the absolute accuracy of detection results. This report does not constitute legal advice and should be reviewed by a qualified professional before being used as evidence in any legal, regulatory, or judicial proceeding. Unauthorized disclosure, reproduction, or distribution of this report is strictly prohibited.
-        </div>
-
-      </div>
-      <div class="pr-footer">
-        <span>REVLAR · AI Media Investigation Platform · Confidential</span>
-        <span>${reportId}</span>
-        <span>Generated ${generatedAt}</span>
-      </div>
-    </div>
-  `;
-
-  // Inject into print div and trigger print
-  const el=document.getElementById('print-report');
-  el.innerHTML=html;
-
-  // Small delay then print
-  setTimeout(()=>{
-    window.print();
-    logActivity('Generated report '+reportId+' for case '+caseId);
+    // Log activity
+    logActivity('Generated report for case '+caseId);
     renderActivityLog();
     if(currentCaseId===caseId)buildCaseActivity(caseId);
-  },150);
 
+  }catch(err){
+    alert('Report generation failed: '+err.message+'\n\nMake sure the generate-report Edge Function is deployed in Supabase.');
+  }finally{
+    btns.forEach(b=>{b.textContent='📄 Generate Report';b.disabled=false;});
+  }
 }
 
 
